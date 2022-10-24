@@ -1,5 +1,7 @@
 
 from glob import glob
+from msilib import text
+from re import T
 from turtle import color, width
 from pyswip import Prolog
 import tkinter as tk
@@ -8,25 +10,28 @@ from tkinter import *
 from copy import deepcopy
 from tabulate import tabulate
 import time
+from datetime import datetime
 
 
-ventana = Tk()
+def getVentana():
+    ventana = Tk()
+    anchoVentana = 1280 
+    altoVentana = 720
 
-anchoVentana = 1280 
-altoVentana = 720
+    # get the screen dimension
+    anchoPantalla = ventana.winfo_screenwidth()
+    altoPantalla = ventana.winfo_screenheight()
 
-# get the screen dimension
-anchoPantalla = ventana.winfo_screenwidth()
-altoPantalla = ventana.winfo_screenheight()
+    # find the center point
+    centroX = int(anchoPantalla/2 - anchoVentana / 2)
+    centroY = int(altoPantalla/2 - altoVentana / 2)
 
-# find the center point
-centroX = int(anchoPantalla/2 - anchoVentana / 2)
-centroY = int(altoPantalla/2 - altoVentana / 2)
+    # set the position of the window to the center of the screen
+    ventana.geometry(f'{anchoVentana}x{altoVentana}+{centroX}+{centroY}')
+    ventana.columnconfigure(0,weight=1)
+    return ventana
 
-# set the position of the window to the center of the screen
-ventana.geometry(f'{anchoVentana}x{altoVentana}+{centroX}+{centroY}')
-ventana.columnconfigure(0,weight=1)
-
+ventana = getVentana()
 prolog = Prolog()
 prolog.consult("logica.pro")
 
@@ -38,14 +43,18 @@ posY = 0
 
 finX = 0
 finY = 0
-
+gano = False
 
 fichaAnterior = "i"
 
 colores= {"x":"red","O":"purple", "f":"yellow","i":"green","ad" : "cyan","at" : "cyan","ab": "cyan","ar" : "cyan","inter" : "cyan"}
 
+numeroMovimientos = 0
+tiempoInicio = datetime.now()
+
 def solicitarArchivo():
     global archivoLaberinto
+
     print ("solicitar archivo")
     #rutaArchivoLaberinto = filedialog.askopenfilename()
     #laberintoProlog = prolog.query("getLaberinto('%s',X)." % (rutaArchivoLaberinto))
@@ -67,7 +76,8 @@ def transformarLaberinto(laberintoProlog):
     
 
 def obtenerPosicionInicial():
-    global laberinto, posX, posY, finX, finY,fichaAnterior
+    global laberinto, posX, posY, finX, finY,fichaAnterior,numeroMovimientos
+    numeroMovimientos = 0
     x = 0
     y = 0
     for i in laberinto:
@@ -93,8 +103,11 @@ botonArchivo= tk.Button(ventana, text ="Archivo", command = lambda: solicitarArc
 botonArchivo.grid(column=1, row=0)
 
 def verificarGane():
+    global gano 
     if fichaAnterior =="f":
         print("Ganó")
+        gano = TRUE
+
 
 ####################################################################################################################
 solucionLaberinto= []
@@ -148,7 +161,7 @@ def crearTablero():
             numCol +=1
         numFila +=1
         numCol = 0
-    tablero.grid(column=0,row=0)
+    tablero.grid(column=0,row=1)
 
 
 
@@ -183,7 +196,7 @@ def moverFichaAux(fichaActual, fichaSiguiente):
             i["bg"] = colores["O"]
 
 def moverFicha(i):
-    global posX, posY,fichaAnterior
+    global posX, posY,fichaAnterior, numeroMovimientos, tiempoInicio
     puntosMovimientos = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     letrasMovimientos = ['w','s','a','d']
     siguientePunto = (posX + puntosMovimientos[i][0], posY + puntosMovimientos[i][1])
@@ -197,6 +210,12 @@ def moverFicha(i):
         laberinto[siguientePunto[0]][siguientePunto[1]] = 'O'
         posY+=puntosMovimientos[i][1]
         posX+=puntosMovimientos[i][0]
+        numeroMovimientos+=1 
+    
+    if numeroMovimientos == 1:
+        tiempoInicio = datetime.now()
+        refrescarTiempo()
+    print(numeroMovimientos)
 
 
 def moverIzquierda(event):
@@ -221,11 +240,30 @@ def moverAbajo(event):
 
 
 
+def formatearTiempo(segundos):
+    horas = int(segundos / 60 / 60)
+    segundos -= horas*60*60
+    minutos = int(segundos/60)
+    segundos -= minutos*60
+    print(f"{horas:02d}:{minutos:02d}:{segundos:02d}")
+    return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+
+def getTiempo():
+    segundos_transcurridos= (datetime.now() - tiempoInicio).total_seconds()
+    return formatearTiempo(int(segundos_transcurridos))
+
+
+def refrescarTiempo():
+    global ventana
+    print("Refrescando! movimientos: ", numeroMovimientos)
+    if numeroMovimientos >=1 and not gano:
+        variable_hora_actual.set(getTiempo())
+        ventana.after(500, refrescarTiempo)
 
 
 
-
-
+variable_hora_actual = tk.StringVar(ventana, value=getTiempo())
+tk.Label(ventana, textvariable=variable_hora_actual).grid(column=0, row=0, sticky=NSEW)
 
 
  
