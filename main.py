@@ -1,25 +1,48 @@
-from turtle import pos
+
+from glob import glob
+from turtle import color, width
 from pyswip import Prolog
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from tkinter import *
 from copy import deepcopy
 from tabulate import tabulate
 import time
 
+
 ventana = Tk()
+
+anchoVentana = 1280 
+altoVentana = 720
+
+# get the screen dimension
+anchoPantalla = ventana.winfo_screenwidth()
+altoPantalla = ventana.winfo_screenheight()
+
+# find the center point
+centroX = int(anchoPantalla/2 - anchoVentana / 2)
+centroY = int(altoPantalla/2 - altoVentana / 2)
+
+# set the position of the window to the center of the screen
+ventana.geometry(f'{anchoVentana}x{altoVentana}+{centroX}+{centroY}')
+ventana.columnconfigure(0,weight=1)
+
 prolog = Prolog()
 prolog.consult("logica.pro")
 
 rutaArchivoLaberinto = ""
 laberinto = []
-
+tablero = []
 posX = 0
 posY = 0
 
 finX = 0
 finY = 0
+
+
 fichaAnterior = "i"
+
+colores= {"x":"red","O":"purple", "f":"yellow","i":"green","ad" : "cyan","at" : "cyan","ab": "cyan","ar" : "cyan","inter" : "cyan"}
 
 def solicitarArchivo():
     global archivoLaberinto
@@ -29,6 +52,7 @@ def solicitarArchivo():
     laberintoProlog = prolog.query("getLaberinto('laberinto1.txt',X).")################################################
     transformarLaberinto(laberintoProlog)
     obtenerPosicionInicial()
+    crearTablero()
     verLaberinto()
 
 def transformarLaberinto(laberintoProlog):
@@ -66,7 +90,7 @@ def obtenerPosicionInicial():
 
 
 botonArchivo= tk.Button(ventana, text ="Archivo", command = lambda: solicitarArchivo())
-botonArchivo.pack()
+botonArchivo.grid(column=1, row=0)
 
 def verificarGane():
     if fichaAnterior =="f":
@@ -104,13 +128,32 @@ def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
 
 
 def verLaberinto():
-    global laberinto
+    global laberinto, ventana, colores
     print("laberinto---------------------")
+
+    
     print(tabulate(laberinto, tablefmt="grid")) 
     verificarGane()
+    
+
+def crearTablero():
+    global laberinto, ventana, colores, tablero
+    tablero = ttk.Frame(ventana)
+    tablero.columnconfigure(0,weight=1)
+    numFila= 0
+    numCol = 0
+    for i in laberinto:
+        for j in i:
+            ficha = tk.Label(tablero, text=j,background=colores[j],padx=0,pady=0).grid(column=numCol, row=numFila, sticky=NSEW)
+            numCol +=1
+        numFila +=1
+        numCol = 0
+    tablero.grid(column=0,row=0)
+
+
 
 botonVer= tk.Button(ventana, text ="ver", command = lambda: verLaberinto())
-botonVer.pack()
+botonVer.grid(column=1, row=1)
 
 def verSol(laberinto):
     global  posX, posY, finX, finY, solucionLaberinto
@@ -121,7 +164,23 @@ def verSol(laberinto):
     print(solucionLaberinto)
 
 botonSol= tk.Button(ventana, text ="Solucion", command = lambda:verSol(laberinto))
-botonSol.pack()
+botonSol.grid(column=1, row=2)
+
+
+#mover ficha en interfaz
+def moverFichaAux(fichaActual, fichaSiguiente):
+    global tablero, fichaAnterior
+    child = tablero.winfo_children()
+    for i in child:
+        infoGrid = i.grid_info()
+        pos = (infoGrid["row"], infoGrid["column"])
+        print("col: ",infoGrid["column"]," row: ", infoGrid["row"], " texto: ",i["text"])
+        if fichaActual == pos:
+            print("encontré la ficha actual")
+            i["bg"] = colores[fichaAnterior]
+        elif fichaSiguiente == pos:
+            print("encontré la siguiente")
+            i["bg"] = colores["O"]
 
 def moverFicha(i):
     global posX, posY,fichaAnterior
@@ -131,6 +190,7 @@ def moverFicha(i):
     movimientoValido = bool(list(prolog.query("permiteMovimiento(%s,%s,%s)."%(fichaAnterior,letrasMovimientos[i],laberinto[siguientePunto[0]][siguientePunto[1]]))))
     print("x: ",siguientePunto[0], " y: ",siguientePunto[1])
     if siguientePunto[0] in range(len(laberinto)) and siguientePunto[1] in range(len(laberinto[siguientePunto[0]])) and movimientoValido:
+        moverFichaAux((posX,posY),siguientePunto) #mueve la ficha graficamente
         fichaTemp = fichaAnterior
         fichaAnterior = laberinto[siguientePunto[0]][siguientePunto[1]]
         laberinto[posX][posY] = fichaTemp
