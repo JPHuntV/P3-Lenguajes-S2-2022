@@ -40,7 +40,7 @@ posY = 0
 
 finX = 0
 finY = 0
-gano = False
+gano = "activo"
 
 fichaAnterior = "i"
 
@@ -78,13 +78,15 @@ def crearPaginaTablero():
     contadorSug = tk.StringVar(frames["ventanaTablero"],value="Sugerencias disponibles: "+str(numeroSugerencias))
     tk.Label(ventanaTablero,textvariable=contadorSug).grid(column=1,row=1)
 
-    botonVer= tk.Button(ventanaTablero, text ="ver", command = lambda: verLaberinto())
-    botonVer.grid(column=2, row=1)
-    botonSol= tk.Button(ventanaTablero, text ="Solucion", command = lambda:obtenerSolucion())
-    botonSol.grid(column=2, row=2)
+    
+    botonVerificar= tk.Button(ventanaTablero, text ="verificar", command = lambda:verificar())
+    botonVerificar.grid(column=2, row=0)
+
+    botonSol= tk.Button(ventanaTablero, text ="Solucion", command = lambda:mostrarSolucion())
+    botonSol.grid(column=2, row=1)
 
     botSolicitarSugerencia= tk.Button(ventanaTablero, text ="Sugerencia", command = lambda:solicitarSugerencia())
-    botSolicitarSugerencia.grid(column=2, row=3)
+    botSolicitarSugerencia.grid(column=2, row=2)
     crearTablero(ventanaTablero)
 
 
@@ -107,7 +109,6 @@ def solicitarArchivo():
     transformarLaberinto(laberintoProlog)
     obtenerPosicionInicial()
     crearPaginaTablero()
-    verLaberinto()
 
 def transformarLaberinto(laberintoProlog):
     global laberinto
@@ -150,8 +151,11 @@ def verificarGane():
     global gano 
     if fichaAnterior =="f":
         print("Ganó")
-        gano = TRUE
+        gano = "exitosa"
 
+def estadoJuego():
+    global gano
+    print(gano)
 
 ####################################################################################################################
 solucionLaberinto= []
@@ -205,18 +209,11 @@ def solicitarSugerencia():
         print("no quedan sugerencias")
         
     print("sssssssssssssssssssssssssssssssss")
+
 def mostrarSugerencia(ficha):
    ficha.config(bg=colores[ficha["text"]])
     
-def verLaberinto():
-    global laberinto, ventana, colores
-    print("laberinto---------------------")
 
-    
-    print(tabulate(laberinto, tablefmt="grid")) 
-    
-    verificarGane()
-    
 
 def crearTablero(ventanaTablero):
     global laberinto, colores, tablero
@@ -234,7 +231,27 @@ def crearTablero(ventanaTablero):
 
 
 
-
+def mostrarSolucion():
+    global solucionLaberinto, gano
+    obtenerSolucion()
+    if solucionLaberinto !=[]:
+        child = tablero.winfo_children()
+        for i in child:
+            infoGrid = i.grid_info()
+            pos = (infoGrid["row"], infoGrid["column"])
+            print("col: ",infoGrid["column"]," row: ", infoGrid["row"], " texto: ",i["text"])
+            i.config(bg=colores[i["text"]])
+            if pos in solucionLaberinto:
+                print ("Si")
+                i.config(bg="purple")
+                #ventana.after(2000,mostrarSugerencia,i)
+                #numeroSugerencias -=1
+                #contadorSug.set("Sugerencias disponibles: "+str(numeroSugerencias))
+                #break
+        gano = "auto"
+        verificarGane()
+    else:
+        print("no hay solución, gg")
 
 def obtenerSolucion():
     global  posX, posY, finX, finY, solucionLaberinto
@@ -248,7 +265,13 @@ def obtenerSolucion():
     
 
 
-
+def verificar():
+    global solucionLaberinto, gano
+    obtenerSolucion()
+    if solucionLaberinto !=[]:
+        print("si forma parte del camino")
+    else:
+            print("no forma parte del camino")
 
 #mover ficha en interfaz
 def moverFichaAux(fichaActual, fichaSiguiente):
@@ -266,13 +289,13 @@ def moverFichaAux(fichaActual, fichaSiguiente):
             i["bg"] = colores["O"]
 
 def moverFicha(i):
-    global posX, posY,fichaAnterior, numeroMovimientos, tiempoInicio, laberinto
+    global posX, posY,fichaAnterior, numeroMovimientos, tiempoInicio, laberinto,gano
     puntosMovimientos = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     letrasMovimientos = ['w','s','a','d']
     siguientePunto = (posX + puntosMovimientos[i][0], posY + puntosMovimientos[i][1])
     if siguientePunto[0] in range(len(laberinto)) and siguientePunto[1] in range(len(laberinto[siguientePunto[0]])):
         movimientoValido = bool(list(prolog.query("permiteMovimiento(%s,%s,%s)."%(fichaAnterior,letrasMovimientos[i],laberinto[siguientePunto[0]][siguientePunto[1]]))))
-        if movimientoValido:
+        if movimientoValido and gano == "activo":
             print("x: ",siguientePunto[0], " y: ",siguientePunto[1])
             moverFichaAux((posX,posY),siguientePunto) #mueve la ficha graficamente
             fichaTemp = fichaAnterior
@@ -283,6 +306,13 @@ def moverFicha(i):
             posX+=puntosMovimientos[i][0]
             numeroMovimientos+=1
             contadorMov.set("Numero de movimientos: "+str(numeroMovimientos)) 
+
+        ###########################################################################
+            print(tabulate(laberinto, tablefmt="grid")) 
+            if fichaAnterior =="f":
+                print("Ganó")
+                gano = "exitosa"
+            verificarGane()
     
     if numeroMovimientos == 1:
         tiempoInicio = datetime.now()
@@ -292,19 +322,19 @@ def moverFicha(i):
 
 def moverIzquierda(event):
     moverFicha(2)
-    verLaberinto()
+    
 
 def moverDerecha(event):
     moverFicha(3)
-    verLaberinto()
+    
 
 def moverArriba(event):
     moverFicha(0)
-    verLaberinto()
+    
 
 def moverAbajo(event):
     moverFicha(1)
-    verLaberinto()
+    
 
 
 
@@ -327,7 +357,7 @@ def getTiempo():
 
 def refrescarTiempo():
     global ventana
-    if numeroMovimientos >=1 and not gano:
+    if numeroMovimientos >=1 and gano == "activo":
         cronometro.set(getTiempo())
         ventana.after(500, refrescarTiempo)
 
