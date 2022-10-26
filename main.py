@@ -189,6 +189,7 @@ def guardarRepeticion(id):
     copiaLab.write(strLab)
     copiaLab.close()
     archivo = open("repeticiones/"+str(id)+".txt","w")
+    
     for i in movRepeticion:
         archivo.write(i[0]+","+str(i[1])+","+str(i[2])+"\n")
     archivo.close
