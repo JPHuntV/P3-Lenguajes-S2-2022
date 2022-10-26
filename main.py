@@ -8,6 +8,7 @@ from copy import deepcopy
 from tabulate import tabulate
 import time
 from datetime import datetime
+import uuid
 
 
 def getVentana():
@@ -46,6 +47,7 @@ fichaAnterior = "i"
 
 colores= {"x":"red","O":"purple", "f":"yellow","i":"green","ad" : "cyan","at" : "cyan","ab": "cyan","ar" : "cyan","inter" : "cyan"}
 frames= {}
+movRepeticion = []
 nickname = "Jugador 1"
 numeroMovimientos = 0
 numeroSugerencias = 10
@@ -88,6 +90,10 @@ def crearPaginaTablero():
     botonAbandonar= tk.Button(ventanaTablero, text ="Abandonar", command = lambda:abandonarPartida())
     botonAbandonar.grid(column=2, row=3)
 
+    botonReiniciar= tk.Button(ventanaTablero, text ="reiniciar", command = lambda:reiniciar())
+    botonReiniciar.grid(column=2, row=4)
+
+
     tablero = crearTablero(ventanaTablero)
     if not tablero:
         raise_frame(frames["ventanaPreJuego"])
@@ -123,7 +129,7 @@ def crearPaginaPreJuego():
     botonVolver.grid(column=0, row=3)
 
 def crearPaginaFinal():
-    global ventana, tablero
+    global ventana, tablero, movRepeticion
     ventanaFinal = crearFrame()
     frames['ventanaFinal'] = ventanaFinal
 
@@ -152,6 +158,21 @@ def crearPaginaFinal():
 
     botonoHome = tk.Button(ventanaFinal, text ="Volver a inicio", command = lambda: raise_frame(frames["ventanaInicio"]))
     botonoHome.grid(column=2, row=6)
+    guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),gano)
+    print(movRepeticion)
+
+def reiniciar():
+    global movRepeticion
+    guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),"abandono")
+    movRepeticion += [["reinicio",-1,-1]]
+    iniciarJuego()
+
+def guardarEstadisticas(pNickname, pCantmov, pCantSug,pTiempo, pTipoFin):
+    estadisticas = open("estadisticas.txt","a")
+    id = uuid.uuid1().hex
+    nuevaEstadistica = str(id)+","+pNickname+","+str(pCantmov)+","+str(10-pCantSug)+","+str(pTiempo)+","+pTipoFin+"\n"
+    estadisticas.write(nuevaEstadistica)
+    estadisticas.close()
 
 def crearFrame():
     global ventana
@@ -166,15 +187,25 @@ def solicitarArchivo():
     rutaArchivoLaberinto = filedialog.askopenfilename()
     laberintoSeleccionado.set(rutaArchivoLaberinto)
 
-def iniciarJuego():
-    global laberintoSeleccionado,posX,posY, finX, finY, gano
 
+def reestablecerValores ():
+    global posX,posY, finX, finY, gano,numeroMovimientos, numeroSugerencias, tiempoInicio,cronometro, movRepeticion
     posX = 0
     posY = 0
 
     finX = 0
     finY = 0
     gano = "inactivo"
+    numeroMovimientos = 0
+    numeroSugerencias = 10
+    tiempoInicio = datetime.now()
+    cronometro.set(getTiempo())
+    movRepeticion = []
+
+def iniciarJuego():
+    global laberintoSeleccionado
+    reestablecerValores()
+    
     if nickname.get() != "":
         if laberintoSeleccionado.get() != "":
 
@@ -200,7 +231,7 @@ def transformarLaberinto(laberintoProlog):
     
 
 def obtenerPosicionInicial():
-    global laberinto, posX, posY, finX, finY,fichaAnterior,numeroMovimientos
+    global laberinto, posX, posY, finX, finY,fichaAnterior,numeroMovimientos,  movRepeticion
     numeroMovimientos = 0
     x = 0
     y = 0
@@ -210,6 +241,7 @@ def obtenerPosicionInicial():
                 posX = x
                 posY = y
                 laberinto[posX][posY]="O"
+                movRepeticion += [["inicio",x,y]]
             if j == "f":
                 finX = x
                 finY = y
@@ -222,18 +254,14 @@ def obtenerPosicionInicial():
 
 
 
-def estadoJuego():
-    global gano
-    print(gano)
-
-
-
 
 
 def abandonarPartida():
-    global gano
+    global gano, movRepeticion
     gano = "abandono"
+    movRepeticion +=[["abandono",-1,-1]]
     print (gano)
+
     crearPaginaFinal()
 ####################################################################################################################
 solucionLaberinto= []
@@ -241,6 +269,7 @@ solucionLaberinto= []
 #este algoritmo fue basado en el siguiente articulo https://programmerclick.com/article/67791960095/ 
 #tomando en cuenta las diferencias entre los objetivos 
 def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
+    global movRepeticion
     actual = laberintoSol[puntoInicio[0]][puntoInicio[1]]
     if actual == "O":
         actual = fichaAnterior
@@ -265,11 +294,12 @@ def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
 ######################################################################################################################################################
 
 def solicitarSugerencia():
-    global solucionLaberinto,tablero,numeroSugerencias
+    global solucionLaberinto,tablero,numeroSugerencias, movRepeticion
     if numeroSugerencias>0:
         obtenerSolucion()
         if solucionLaberinto !=[]:
             sugerencia = solucionLaberinto[1]
+            movRepeticion += [["sugerencia",sugerencia[0], sugerencia[1]]]
             child = tablero.winfo_children()
             for i in child:
                 infoGrid = i.grid_info()
@@ -313,15 +343,18 @@ def crearTablero(ventanaTablero):
 
 
 def autoSolucionar():
-    global solucionLaberinto, gano
+    global solucionLaberinto, gano, movRepeticion
     obtenerSolucion()
     if solucionLaberinto !=[]:
         gano = "auto"
+        for i in solucionLaberinto:
+            movRepeticion += [["auto",i[0],i[1]]]
         crearPaginaFinal()
     else:
         print("no hay solución, gg")
 
 def mostrarSolucion(tab):
+    global movRepeticion
     child = tab.winfo_children()
     for i in child:
         infoGrid = i.grid_info()
@@ -373,7 +406,7 @@ def moverFichaAux(fichaActual, fichaSiguiente):
             i["bg"] = colores["O"]
 
 def moverFicha(i):
-    global posX, posY,fichaAnterior, numeroMovimientos, tiempoInicio, laberinto,gano
+    global posX, posY,fichaAnterior, numeroMovimientos, tiempoInicio, laberinto,gano,movRepeticion
     if gano != "activo":
         print("el juego no está activo")
         return
@@ -383,7 +416,7 @@ def moverFicha(i):
     if siguientePunto[0] in range(len(laberinto)) and siguientePunto[1] in range(len(laberinto[siguientePunto[0]])):
         movimientoValido = bool(list(prolog.query("permiteMovimiento(%s,%s,%s)."%(fichaAnterior,letrasMovimientos[i],laberinto[siguientePunto[0]][siguientePunto[1]]))))
         if movimientoValido and gano == "activo":
-            print("x: ",siguientePunto[0], " y: ",siguientePunto[1])
+            movRepeticion += [["normal",siguientePunto[0],siguientePunto[1]]]
             moverFichaAux((posX,posY),siguientePunto) #mueve la ficha graficamente
             fichaTemp = fichaAnterior
             fichaAnterior = laberinto[siguientePunto[0]][siguientePunto[1]]
@@ -399,6 +432,7 @@ def moverFicha(i):
             if fichaAnterior =="f":
                 print("Ganó")
                 gano = "exitosa"
+                movRepeticion += [["exitosa",-1,-1]]
                 crearPaginaFinal()
     
     if numeroMovimientos == 1:
