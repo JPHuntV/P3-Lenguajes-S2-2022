@@ -138,10 +138,11 @@ def crearPaginaFinal():
     tablero = crearTablero(ventanaFinal)
     tablero.grid(column=0,row=1,rowspan=5)
 
+
     if gano == "auto":
         mostrarSolucion(tablero)
 
-    tk.Label(ventanaFinal,text="Nickname: ").grid(column=1,row=1)
+    tk.Label(ventanaFinal,text="Nickname: ").grid(column=1,row=1,sticky=NSEW)
     tk.Label(ventanaFinal,text="Movimientos: ").grid(column=1,row=2)
     tk.Label(ventanaFinal,text="Sugerencias utilizadas: ").grid(column=1,row=3)
     tk.Label(ventanaFinal,text="Tiempo: ").grid(column=1,row=4)
@@ -158,7 +159,10 @@ def crearPaginaFinal():
 
     botonoHome = tk.Button(ventanaFinal, text ="Volver a inicio", command = lambda: raise_frame(frames["ventanaInicio"]))
     botonoHome.grid(column=2, row=6)
-    guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),gano)
+    idEstadistica = guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),gano)
+
+    botonGuardarRepeticion = tk.Button(ventanaFinal, text ="Guardar repetición", command = lambda: guardarRepeticion(idEstadistica))
+    botonGuardarRepeticion.grid(column=0, row=6)
     print(movRepeticion)
 
 def reiniciar():
@@ -173,6 +177,22 @@ def guardarEstadisticas(pNickname, pCantmov, pCantSug,pTiempo, pTipoFin):
     nuevaEstadistica = str(id)+","+pNickname+","+str(pCantmov)+","+str(10-pCantSug)+","+str(pTiempo)+","+pTipoFin+"\n"
     estadisticas.write(nuevaEstadistica)
     estadisticas.close()
+    return id
+
+
+def guardarRepeticion(id):
+    global movRepeticion,rutaArchivoLaberinto
+    archivoLab = open(rutaArchivoLaberinto,"r")
+    strLab = archivoLab.read()
+    archivoLab.close()
+    copiaLab = open("laberintos/"+str(id)+".txt","w")
+    copiaLab.write(strLab)
+    copiaLab.close()
+    archivo = open("repeticiones/"+str(id)+".txt","w")
+    for i in movRepeticion:
+        archivo.write(i[0]+","+str(i[1])+","+str(i[2])+"\n")
+    archivo.close
+
 
 def crearFrame():
     global ventana
