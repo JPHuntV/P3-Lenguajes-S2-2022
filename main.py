@@ -1,5 +1,6 @@
 
 
+import os
 from pyswip import Prolog
 import tkinter as tk
 from tkinter import filedialog, ttk
@@ -45,7 +46,20 @@ gano = "inactivo"
 
 fichaAnterior = "i"
 
-colores= {"x":"red","O":"purple", "f":"yellow","i":"green","ad" : "cyan","at" : "cyan","ab": "cyan","ar" : "cyan","inter" : "cyan"}
+colores = {"x":"red",
+            "O":"purple",
+            "f":"yellow",
+            "i":"green",
+            "ad" : "cyan",
+            "at" : "cyan",
+            "ab": "cyan",
+            "ar" : "cyan",
+            "inter" : "cyan",
+            "auto": "yellow",
+            "normal" : "yellow",
+            "sugerencia" : "yellow",
+            "inicio": "yellow"
+            }
 frames= {}
 movRepeticion = []
 nickname = "Jugador 1"
@@ -63,10 +77,13 @@ def crearPaginaInicio():
     frames['ventanaInicio'] = ventanaInicio
     botonJuegoNuevo= tk.Button(ventanaInicio, text ="Juego Nuevo", command = lambda: crearPaginaPreJuego())
     botonJuegoNuevo.grid(column=0,row=0)
+
+    botonEstadisticas= tk.Button(ventanaInicio, text ="Estadisticas", command = lambda: crearPaginaEstadisticas("ventanaInicio"))
+    botonEstadisticas.grid(column=0,row=1)
     
 
 def crearPaginaTablero():
-    global ventana, contadorMov, contadorSug, gano
+    global ventana, contadorMov, contadorSug, gano, laberinto
     ventanaTablero  = crearFrame()
     frames['ventanaTablero'] = ventanaTablero
     tk.Label(ventanaTablero, textvariable=cronometro).grid(column=0, row=0, sticky=NSEW)
@@ -94,7 +111,7 @@ def crearPaginaTablero():
     botonReiniciar.grid(column=2, row=4)
 
 
-    tablero = crearTablero(ventanaTablero)
+    tablero = crearTablero(ventanaTablero,laberinto)
     if not tablero:
         raise_frame(frames["ventanaPreJuego"])
 
@@ -129,13 +146,13 @@ def crearPaginaPreJuego():
     botonVolver.grid(column=0, row=3)
 
 def crearPaginaFinal():
-    global ventana, tablero, movRepeticion
+    global ventana, tablero, movRepeticion,laberinto
     ventanaFinal = crearFrame()
     frames['ventanaFinal'] = ventanaFinal
 
     tk.Label(ventanaFinal,text="Juego terminado").grid(column=0,row=0,columnspan=3)
 
-    tablero = crearTablero(ventanaFinal)
+    tablero = crearTablero(ventanaFinal,laberinto)
     tablero.grid(column=0,row=1,rowspan=5)
 
 
@@ -165,6 +182,123 @@ def crearPaginaFinal():
     botonGuardarRepeticion.grid(column=0, row=6)
     print(movRepeticion)
 
+def crearPaginaEstadisticas(ventanaAnterior):
+    global ventana
+    ventanaEstadisticas = crearFrame()
+    frames['ventanaEstadisticas'] = ventanaEstadisticas
+
+    ef1 = tk.Frame(ventanaEstadisticas)
+    #ef1.columnconfigure(0,weight=1)
+    ef1.grid(column=0, row=0,sticky=NSEW)
+
+    botonVolver = tk.Button(ef1, text ="Volver", command = lambda: raise_frame(frames[ventanaAnterior]))
+    botonVolver.grid(column=0, row=0, sticky=W,padx=2, columnspan=1)
+
+    tk.Label(ef1, text="Estadisticas").grid(column=1, row=0,sticky=W)
+
+
+    ef2 = tk.Frame(ventanaEstadisticas)
+    ef2.grid(column=0, row=2,sticky=NSEW)
+    tk.Label(ef2, text="Nickname").grid(column=1, row=0)
+    tk.Label(ef2, text="Movimientos").grid(column=2, row=0)
+    tk.Label(ef2, text="Sugerencias").grid(column=3, row=0)
+    tk.Label(ef2, text="Tiempo").grid(column=4, row=0)
+    tk.Label(ef2, text="Tipo finalización").grid(column=5, row=0)
+    tk.Label(ef2, text="Repetición").grid(column=6, row=0)
+
+    
+
+    listaEstadisticas = getEstadisticas()
+
+
+    fil = 1 
+    for estadistica in listaEstadisticas:
+        tk.Label(ef2, text=estadistica[1]).grid(column=1, row=fil)
+        tk.Label(ef2, text=estadistica[2]).grid(column=2, row=fil)
+        tk.Label(ef2, text=estadistica[3]).grid(column=3, row=fil)
+        tk.Label(ef2, text=estadistica[4]).grid(column=4, row=fil)
+        tk.Label(ef2, text=estadistica[5]).grid(column=5, row=fil)
+        print("repeticiones/"+str(estadistica[0])+".txt")
+        if os.path.isfile("repeticiones/"+str(estadistica[0])+".txt") and os.path.isfile("laberintos/"+str(estadistica[0])+".txt"):
+            tk.Button(ef2, text =estadistica[0], command = lambda x= estadistica[0]: getPaginaRepeticion(x)).grid(column=6, row=fil)
+        else:
+            tk.Button(ef2, text ="Repetición no disponible",state=DISABLED).grid(column=6, row=fil)
+        fil+=1
+    
+    print (listaEstadisticas)
+
+def getEstadisticas():
+    archivoEstadisticas = open("estadisticas.txt","r")
+    estadisticas = archivoEstadisticas.read()
+    archivoEstadisticas.close()
+    listaEstadisticasTemp = estadisticas.split("\n")
+    listaEstadisticas = []
+    for i in listaEstadisticasTemp:
+        listaEstadisticas += [i.split(",")] 
+    listaEstadisticas.pop(-1)
+    return listaEstadisticas
+
+def getRepeticion(id):
+    archivoRepeticion = open("repeticiones/"+str(id)+".txt","r")
+    strRepeticion = archivoRepeticion.read()
+    archivoRepeticion.close()
+    listaRepeticionTemp = strRepeticion.split("\n")
+    listaRepeticion = []
+    for i in listaRepeticionTemp:
+        listaRepeticion += [i.split(",")] 
+    listaRepeticion.pop(-1)
+    return listaRepeticion
+
+def getPaginaRepeticion(id):
+    global ventana, laberinto
+    ventanaRepeticion = crearFrame()
+    frames['ventanaRepeticion'] = ventanaRepeticion
+    laberintoProlog = prolog.query("getLaberinto('%s',X)." % ("laberintos/"+str(id)+".txt"))
+    laberintoRepeticion = transformarLaberinto(laberintoProlog)
+    tablero = crearTablero(ventanaRepeticion, laberintoRepeticion)
+    if not tablero:
+        print("algo pasó")
+
+    else:
+        tablero.grid(column=0,row=0)
+        repeticion = getRepeticion(id)
+        print(repeticion)
+        reproducirRepeticion(tablero,repeticion)
+
+
+def reproducirRepeticion(tablero, repeticion):
+    global ventana
+    if repeticion == []:
+        print("no quedan pasos")
+    else:
+        print(repeticion[0])
+        reproducirRepeticionAux(tablero,repeticion[0])
+        repeticion.pop(0)
+        ventana.after(1300, reproducirRepeticion, tablero, repeticion)
+        #reproducirRepeticion(tablero,repeticion)
+
+def reproducirRepeticionAux(tab,punto):
+    global colores,ventana
+    child = tab.winfo_children()
+    for i in child:
+        infoGrid = i.grid_info()
+        pos = (infoGrid["row"], infoGrid["column"])
+        #print("col: ",infoGrid["column"]," row: ", infoGrid["row"], " texto: ",i["text"])
+        if pos == (int(punto[1]),int(punto[2])):
+            #i.config(bg=colores[punto[0]])
+            if punto[0] =="sugerencia":
+                parpadear(i,colores[punto[0]],"black",5)
+            else:
+                i.config(bg= colores[punto[0]])
+            print ("Si")
+
+def parpadear(objeto, col1, col2, cant):
+    global ventana
+    if cant != 0:
+        objeto.config(bg= col2)
+        ventana.after(int(1300/cant),parpadear,objeto,col2,col1,cant-1)
+
+
 def reiniciar():
     global movRepeticion
     guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),"abandono")
@@ -189,7 +323,7 @@ def guardarRepeticion(id):
     copiaLab.write(strLab)
     copiaLab.close()
     archivo = open("repeticiones/"+str(id)+".txt","w")
-    
+
     for i in movRepeticion:
         archivo.write(i[0]+","+str(i[1])+","+str(i[2])+"\n")
     archivo.close
@@ -197,8 +331,7 @@ def guardarRepeticion(id):
 
 def crearFrame():
     global ventana
-    frame = ttk.Frame(ventana)
-    frame.columnconfigure(0,weight=1)
+    frame = tk.Frame(ventana)
     frame.grid(column=0, row=0,sticky=NSEW)
     return frame
 
@@ -224,7 +357,7 @@ def reestablecerValores ():
     movRepeticion = []
 
 def iniciarJuego():
-    global laberintoSeleccionado
+    global laberintoSeleccionado, laberinto
     reestablecerValores()
     
     if nickname.get() != "":
@@ -232,7 +365,7 @@ def iniciarJuego():
 
             laberintoProlog = prolog.query("getLaberinto('%s',X)." % (laberintoSeleccionado.get()))
             #laberintoProlog = prolog.query("getLaberinto('laberinto1.txt',X).")################################################
-            transformarLaberinto(laberintoProlog)
+            laberinto = transformarLaberinto(laberintoProlog)
             obtenerPosicionInicial()
             crearPaginaTablero()
         else:
@@ -241,13 +374,13 @@ def iniciarJuego():
         print("ingrese un nombre de usuario")
 
 def transformarLaberinto(laberintoProlog):
-    global laberinto
     laberinto = []
     for i in laberintoProlog: 
         for j in i["X"]:
             elemento = j.decode("utf-8") #transformar de byte a string
             listaEle = elemento.strip('][').split(',') #transformar de string a lista
             laberinto += [listaEle]
+    return laberinto
 
     
 
@@ -344,13 +477,13 @@ def mostrarSugerencia(ficha):
     
 
 
-def crearTablero(ventanaTablero):
+def crearTablero(ventanaTablero,laberintoTablero):
     global laberinto, colores, tablero
     tablero = ttk.Frame(ventanaTablero)
     tablero.columnconfigure(0,weight=1)
     numFila= 0
     numCol = 0
-    for i in laberinto:
+    for i in laberintoTablero:
         for j in i:
             try:
                 ficha = tk.Label(tablero, text=j,background=colores[j],padx=0,pady=0).grid(column=numCol, row=numFila, sticky=NSEW)
@@ -375,7 +508,6 @@ def autoSolucionar():
         print("no hay solución, gg")
 
 def mostrarSolucion(tab):
-    global movRepeticion
     child = tab.winfo_children()
     for i in child:
         infoGrid = i.grid_info()
@@ -385,10 +517,6 @@ def mostrarSolucion(tab):
         if pos in solucionLaberinto:
             print ("Si")
             i.config(bg="purple")
-            #ventana.after(2000,mostrarSugerencia,i)
-            #numeroSugerencias -=1
-            #contadorSug.set("Sugerencias disponibles: "+str(numeroSugerencias))
-            #break
     
 
 def obtenerSolucion():
