@@ -67,7 +67,7 @@ numeroMovimientos = 0
 numeroSugerencias = 10
 tiempoInicio = datetime.now()
 
-
+laberintoPrueba = [['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'], ['x', 'ar', 'x', 'x', 'ad', 'ad', 'ad', 'inter', 'ad', 'inter', 'x'], ['i', 'inter', 'ad', 'ad', 'inter', 'x', 'x', 'ab', 'x', 'ab', 'x'], ['x', 'ab', 'x', 'x', 'x', 'inter', 'at', 'inter', 'x', 'ab', 'x'], ['x', 'ab', 'x', 'x', 'x', 'ab', 'x', 'ab', 'x', 'x', 'x'], ['x', 'ab', 'x', 'x', 'inter', 'inter', 'x', 'ab', 'x', 'inter', 'f'], ['x', 'ab', 'x', 'x', 'ab', 'x', 'x', 'inter', 'inter', 'inter', 'x'], ['x', 'ab', 'x', 'x', 'ab', 'x', 'x', 'x', 'ar', 'x', 'x'], ['x', 'ab', 'x', 'at', 'inter', 'inter', 'ad', 'ad', 'inter', 'at', 'x'], ['x', 'ab', 'x', 'ar', 'x', 'ab', 'x', 'x', 'ab', 'ar', 'x'], ['x', 'inter', 'ad', 'inter', 'x', 'inter', 'ad', 'x', 'ab', 'inter', 'x'], ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x']]
 def raise_frame(frame):
     frame.tkraise()
 
@@ -80,8 +80,14 @@ def crearPaginaInicio():
 
     botonEstadisticas= tk.Button(ventanaInicio, text ="Estadisticas", command = lambda: crearPaginaEstadisticas("ventanaInicio"))
     botonEstadisticas.grid(column=0,row=1)
-    
 
+    botonAuto= tk.Button(ventanaInicio, text ="autosolucion", command = lambda:probar())
+    botonAuto.grid(column=0,row=2)
+   
+    
+def probar():
+    p = list(prolog.query("test(%s, %d,%d)."%(laberintoPrueba,0,0)))
+    print(p)
 def crearPaginaTablero():
     global ventana, contadorMov, contadorSug, gano, laberinto
     ventanaTablero  = crearFrame()
@@ -238,14 +244,15 @@ def getEstadisticas():
     listaEstadisticas.pop(-1)
     return listaEstadisticas
 
+
 def getRepeticion(id):
-    archivoRepeticion = open("repeticiones/"+str(id)+".txt","r")
+    archivoRepeticion = open("repeticiones/"+str(id)+".txt", "r")
     strRepeticion = archivoRepeticion.read()
     archivoRepeticion.close()
     listaRepeticionTemp = strRepeticion.split("\n")
     listaRepeticion = []
     for i in listaRepeticionTemp:
-        listaRepeticion += [i.split(",")] 
+        listaRepeticion += [i.split(",")]
     listaRepeticion.pop(-1)
     return listaRepeticion
 
@@ -366,6 +373,7 @@ def iniciarJuego():
             laberintoProlog = prolog.query("getLaberinto('%s',X)." % (laberintoSeleccionado.get()))
             #laberintoProlog = prolog.query("getLaberinto('laberinto1.txt',X).")################################################
             laberinto = transformarLaberinto(laberintoProlog)
+            print (laberinto)
             obtenerPosicionInicial()
             crearPaginaTablero()
         else:
@@ -377,9 +385,12 @@ def transformarLaberinto(laberintoProlog):
     laberinto = []
     for i in laberintoProlog: 
         for j in i["X"]:
-            elemento = j.decode("utf-8") #transformar de byte a string
-            listaEle = elemento.strip('][').split(',') #transformar de string a lista
-            laberinto += [listaEle]
+            fila = []
+            for k in j:
+                elemento = k.decode("utf-8") #transformar de byte a string
+                #listaEle = elemento.strip('][').split(',') #transformar de string a lista
+                fila += [elemento]
+            laberinto += [fila]
     return laberinto
 
     
