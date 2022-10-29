@@ -3,7 +3,7 @@
 import os
 from pyswip import Prolog
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog
 from tkinter import *
 from copy import deepcopy
 from tabulate import tabulate
@@ -27,7 +27,7 @@ def getVentana():
 
     # set the position of the window to the center of the screen
     ventana.geometry(f'{anchoVentana}x{altoVentana}+{centroX}+{centroY}')
-    ventana.columnconfigure(0,weight=1)
+    ventana.columnconfigure(0,weight=1, uniform="vent")
     return ventana
 
 ventana = getVentana()
@@ -45,20 +45,20 @@ finY = 0
 gano = "inactivo"
 
 fichaAnterior = "i"
-
-colores = {"x":"red",
-            "O":"purple",
-            "f":"yellow",
-            "i":"green",
-            "ad" : "cyan",
-            "at" : "cyan",
-            "ab": "cyan",
-            "ar" : "cyan",
-            "inter" : "cyan",
-            "auto": "yellow",
-            "normal" : "yellow",
-            "sugerencia" : "yellow",
-            "inicio": "yellow"
+flechas={"at":"←","ad":"→","ar":"↑","ab":"↓","inter":"+","i":"⌂","f":"▧","x":"x","O":"O"}
+colores = {"x":"#2E4053",
+            "O":"#5499C7",
+            "f":"#A6ACAF",
+            "i":"#AEB6BF",
+            "ad" : "#48C9B0",
+            "at" : "#F4D03F",
+            "ab": "#16A085",
+            "ar" : "#AF7AC5",
+            "inter" : "#873600",
+            "auto": "#E67063",
+            "normal" : "#16A085",
+            "sugerencia" : "#E67063",
+            "inicio": "#AEB6BF"
             }
 frames= {}
 movRepeticion = []
@@ -81,13 +81,10 @@ def crearPaginaInicio():
     botonEstadisticas= tk.Button(ventanaInicio, text ="Estadisticas", command = lambda: crearPaginaEstadisticas("ventanaInicio"))
     botonEstadisticas.grid(column=0,row=1)
 
-    botonAuto= tk.Button(ventanaInicio, text ="autosolucion", command = lambda:probar())
-    botonAuto.grid(column=0,row=2)
+
    
     
-def probar():
-    p = list(prolog.query("test(%s, %d,%d)."%(laberintoPrueba,0,0)))
-    print(p)
+
 def crearPaginaTablero():
     global ventana, contadorMov, contadorSug, gano, laberinto
     ventanaTablero  = crearFrame()
@@ -122,7 +119,7 @@ def crearPaginaTablero():
         raise_frame(frames["ventanaPreJuego"])
 
     else:
-        tablero.grid(column=0,row=1)
+        tablero.grid(column=0,row=1,rowspan=5)
         gano = "activo"
 
 
@@ -135,6 +132,7 @@ def crearPaginaPreJuego():
     tk.Label(ventanaPreJuego,text="Nickname: ").grid(column=0,row=0)
 
     nickname = tk.Entry(ventanaPreJuego)
+    
     nickname.grid(column=1,row=0)
 
     tk.Label(ventanaPreJuego,text="Laberinto: ").grid(column=0,row=1)
@@ -142,7 +140,8 @@ def crearPaginaPreJuego():
     botonArchivo = tk.Button(ventanaPreJuego, text ="Archivo", command = lambda: solicitarArchivo())
     botonArchivo.grid(column=1, row=1)
 
-    laberintoSeleccionado = tk.StringVar(frames["ventanaPreJuego"],value=rutaArchivoLaberinto)
+    #laberintoSeleccionado = tk.StringVar(frames["ventanaPreJuego"],value=rutaArchivoLaberinto)
+    laberintoSeleccionado = tk.StringVar(frames["ventanaPreJuego"],value="laberinto.txt")
     tk.Label(ventanaPreJuego,textvariable=laberintoSeleccionado).grid(column=0,row=2)
 
     botonIniciarJuego = tk.Button(ventanaPreJuego, text ="Iniciar", command = lambda: iniciarJuego())
@@ -154,38 +153,34 @@ def crearPaginaPreJuego():
 def crearPaginaFinal():
     global ventana, tablero, movRepeticion,laberinto
     ventanaFinal = crearFrame()
+    ventanaFinal.grid(sticky=NSEW)
+    ventanaFinal.columnconfigure((0,1,2),weight=1, uniform="venFinal")
     frames['ventanaFinal'] = ventanaFinal
 
-    tk.Label(ventanaFinal,text="Juego terminado").grid(column=0,row=0,columnspan=3)
+    tk.Label(ventanaFinal,text="Juego terminado", borderwidth=2, relief="solid").grid(column=0,row=0,columnspan=3,sticky="we")
+    tk.Label(ventanaFinal,text="Sugerencias utilizadas: "+str(10-numeroSugerencias), borderwidth=2, relief="solid").grid(column=0,row=1,sticky="we")
+    #tk.Label(ventanaFinal,text=10-numeroSugerencias).grid(column=2,row=3)
+    tk.Label(ventanaFinal,textvariable=cronometro, borderwidth=2, relief="solid").grid(column=1,row=1,sticky="we")
+    tk.Label(ventanaFinal,text="Movimientos: "+str(numeroMovimientos), borderwidth=2, relief="solid").grid(column=2,row=1,sticky="we")
 
     tablero = crearTablero(ventanaFinal,laberinto)
-    tablero.grid(column=0,row=1,rowspan=5)
-
-
+    tablero.grid(column=0,row=2,columnspan=3)
+    
     if gano == "auto":
         mostrarSolucion(tablero)
 
-    tk.Label(ventanaFinal,text="Nickname: ").grid(column=1,row=1,sticky=NSEW)
-    tk.Label(ventanaFinal,text="Movimientos: ").grid(column=1,row=2)
-    tk.Label(ventanaFinal,text="Sugerencias utilizadas: ").grid(column=1,row=3)
-    tk.Label(ventanaFinal,text="Tiempo: ").grid(column=1,row=4)
-    tk.Label(ventanaFinal,text="Finalizó por:").grid(column=1,row=5)
-
-    tk.Label(ventanaFinal,text=nickname.get()).grid(column=2,row=1)
-    tk.Label(ventanaFinal,text=numeroMovimientos).grid(column=2,row=2)
-    tk.Label(ventanaFinal,text=10-numeroSugerencias).grid(column=2,row=3)
-    tk.Label(ventanaFinal,textvariable=cronometro).grid(column=2,row=4)
-    tk.Label(ventanaFinal,text=gano).grid(column=2,row=5)
+    tk.Label(ventanaFinal,text="Nickname: "+nickname.get()).grid(column=0,row=3,sticky=NSEW)
+    tk.Label(ventanaFinal,text="Finalizó por:"+gano).grid(column=2,row=3)
 
     botonoEstadisticas = tk.Button(ventanaFinal, text ="Estadísticas", command = lambda: print("estadisticas"))
-    botonoEstadisticas.grid(column=1, row=6)
+    botonoEstadisticas.grid(column=0, row=4)
 
     botonoHome = tk.Button(ventanaFinal, text ="Volver a inicio", command = lambda: raise_frame(frames["ventanaInicio"]))
-    botonoHome.grid(column=2, row=6)
+    botonoHome.grid(column=2, row=4)
     idEstadistica = guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),gano)
 
     botonGuardarRepeticion = tk.Button(ventanaFinal, text ="Guardar repetición", command = lambda: guardarRepeticion(idEstadistica))
-    botonGuardarRepeticion.grid(column=0, row=6)
+    botonGuardarRepeticion.grid(column=1, row=4)
     print(movRepeticion)
 
 def crearPaginaEstadisticas(ventanaAnterior):
@@ -224,7 +219,6 @@ def crearPaginaEstadisticas(ventanaAnterior):
         tk.Label(ef2, text=estadistica[3]).grid(column=3, row=fil)
         tk.Label(ef2, text=estadistica[4]).grid(column=4, row=fil)
         tk.Label(ef2, text=estadistica[5]).grid(column=5, row=fil)
-        print("repeticiones/"+str(estadistica[0])+".txt")
         if os.path.isfile("repeticiones/"+str(estadistica[0])+".txt") and os.path.isfile("laberintos/"+str(estadistica[0])+".txt"):
             tk.Button(ef2, text =estadistica[0], command = lambda x= estadistica[0]: getPaginaRepeticion(x)).grid(column=6, row=fil)
         else:
@@ -338,7 +332,7 @@ def guardarRepeticion(id):
 
 def crearFrame():
     global ventana
-    frame = tk.Frame(ventana)
+    frame = tk.Frame(ventana,width=ventana.winfo_width(), height=ventana.winfo_height())
     frame.grid(column=0, row=0,sticky=NSEW)
     return frame
 
@@ -434,11 +428,10 @@ solucionLaberinto= []
 #este algoritmo fue basado en el siguiente articulo https://programmerclick.com/article/67791960095/ 
 #tomando en cuenta las diferencias entre los objetivos 
 def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
-    global movRepeticion
-    actual = laberintoSol[puntoInicio[0]][puntoInicio[1]]
+    actual = laberintoSol[puntoInicio[0]][puntoInicio[1]] #obtener actual
     if actual == "O":
         actual = fichaAnterior
-    laberintoSol[puntoInicio[0]][puntoInicio[1]] = "v"
+    laberintoSol[puntoInicio[0]][puntoInicio[1]] = "v" #marcar
     if puntoInicio == puntoFinal:  #si la posición de la p
         solucionLaberinto.append(puntoInicio)
         return True
@@ -457,7 +450,32 @@ def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
     return False  # El laberinto no tiene solución
 
 ######################################################################################################################################################
+def solucionarLaberinto2(laberintoSol, puntoInicio, puntoFinal):
+    print("si estoy aqui")
+    actual = laberintoSol[puntoInicio[0]][puntoInicio[1]] #obtener actual
+    if actual == "O":
+        actual = fichaAnterior
+    laberintoSol[puntoInicio[0]][puntoInicio[1]] = "v" #marcar
+    if puntoInicio == puntoFinal:  #si la posición de la p
+        print("llegue al final")
+        solucionLaberinto.append(puntoInicio)
+        return True
+    else:
+        puntosMovimientos = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        letrasMovimientos = ['w','s','a','d']
+        for i in range(4):
+            siguientePunto = (puntoInicio[0] + puntosMovimientos[i][0], puntoInicio[1] + puntosMovimientos[i][1])
+            siguiente = laberintoSol[siguientePunto[0]][siguientePunto[1]]
+            print("########\nActual: ", actual, "\tsiguiente: ", siguiente, " direccion: ",letrasMovimientos[i])
+            movimientosValido = bool(list(prolog.query("permiteMovimiento(%s,'%s',%s)."%(actual, letrasMovimientos[i],siguiente)))) #prolog evalua si el movimiento se puede realizar
+            if movimientosValido:
+                if solucionarLaberinto2(laberintoSol, siguientePunto, puntoFinal):
+                    solucionLaberinto.append(puntoInicio)
+                    return True
+    return False  # El laberinto no tiene solución
 
+
+    ##############################################################################################
 def solicitarSugerencia():
     global solucionLaberinto,tablero,numeroSugerencias, movRepeticion
     if numeroSugerencias>0:
@@ -489,15 +507,27 @@ def mostrarSugerencia(ficha):
 
 
 def crearTablero(ventanaTablero,laberintoTablero):
-    global laberinto, colores, tablero
-    tablero = ttk.Frame(ventanaTablero)
-    tablero.columnconfigure(0,weight=1)
+    global ventana, laberinto, colores, tablero,flechas
+    x = 550
+    y = 550
+    print("---------------------------------"+str(x))
+    tablero = tk.Frame(ventanaTablero)
+    tablero.config(width=x ,height=y)
+    tablero.grid(column=0,row=0)
+    #
+    #tablero.columnconfigure(0,weight=1)
+    cantFilas= len(laberintoTablero)
+    cantCol = len(laberintoTablero[0])
     numFila= 0
     numCol = 0
     for i in laberintoTablero:
+        tablero.grid_rowconfigure(numFila,minsize=y/cantFilas,weight=1,uniform="crearTab")
         for j in i:
+
+            tablero.grid_columnconfigure(numCol,minsize=x/cantCol,weight=1, uniform="crearTab")
             try:
-                ficha = tk.Label(tablero, text=j,background=colores[j],padx=0,pady=0).grid(column=numCol, row=numFila, sticky=NSEW)
+
+                ficha = tk.Label(tablero, text=j,background=colores[j],foreground=colores[j]).grid(column=numCol, row=numFila, sticky=NSEW)
             except:
                 return False
             numCol +=1
@@ -534,7 +564,7 @@ def obtenerSolucion():
     global  posX, posY, finX, finY, solucionLaberinto
     solucionLaberinto = []
     laberintoTemp = deepcopy(laberinto)
-    solucionarLaberinto(laberintoTemp,(posX,posY),(finX, finY))
+    solucionarLaberinto2(laberintoTemp,(posX,posY),(finX, finY))
     #verLaberinto()##################
     #########raise_frame(frames["ventanaInicio"])
     solucionLaberinto.reverse()
