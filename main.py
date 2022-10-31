@@ -261,13 +261,19 @@ def crearPaginaFinal():
     ventanaFinal = crearFrame()
     ventanaFinal.grid(sticky=NSEW)
     ventanaFinal.columnconfigure((0,1,2),weight=1, uniform="venFinal")
+    ventanaFinal.rowconfigure((0,1,3), weight=1)
+    ventanaFinal.rowconfigure(2, weight=1)
     frames['ventanaFinal'] = ventanaFinal
 
-    tk.Label(ventanaFinal,text="Juego terminado", borderwidth=2, relief="solid").grid(column=0,row=0,columnspan=3,sticky="we")
-    tk.Label(ventanaFinal,text="Sugerencias utilizadas: "+str(10-numeroSugerencias), borderwidth=2, relief="solid").grid(column=0,row=1,sticky="we")
+    tk.Label(ventanaFinal,text="Juego terminado", bg="#4F67E0", fg="white", font="ms-sans-serif 20").grid(column=1,row=0,sticky=NSEW)
+    tk.Label(ventanaFinal,text="Nickname: "+nickname.get() , bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(column=0,row=0,sticky=NSEW)
+    tk.Label(ventanaFinal,text="Finalizó por:"+gano , bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(column=2,row=0,sticky=NSEW)
+
+
+    tk.Label(ventanaFinal,text="Sugerencias utilizadas: "+str(10-numeroSugerencias),bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(column=0,row=1,sticky=NSEW)
     #tk.Label(ventanaFinal,text=10-numeroSugerencias).grid(column=2,row=3)
-    tk.Label(ventanaFinal,textvariable=cronometro, borderwidth=2, relief="solid").grid(column=1,row=1,sticky="we")
-    tk.Label(ventanaFinal,text="Movimientos: "+str(numeroMovimientos), borderwidth=2, relief="solid").grid(column=2,row=1,sticky="we")
+    tk.Label(ventanaFinal,textvariable=cronometro,bg="#4F67E0", fg="white", font="ms-sans-serif 16").grid(column=1,row=1,sticky=NSEW)
+    tk.Label(ventanaFinal,text="Movimientos: "+str(numeroMovimientos),bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(column=2,row=1,sticky=NSEW)
 
     tablero = crearTablero(ventanaFinal,laberinto)
     tablero.grid(column=0,row=2,columnspan=3)
@@ -275,25 +281,22 @@ def crearPaginaFinal():
     if gano == "auto":
         mostrarSolucion(tablero)
 
-    tk.Label(ventanaFinal,text="Nickname: "+nickname.get()).grid(column=0,row=3,sticky=NSEW)
-    tk.Label(ventanaFinal,text="Finalizó por:"+gano).grid(column=2,row=3)
 
-    botonoEstadisticas = tk.Button(ventanaFinal, text ="Estadísticas", command = lambda: print("estadisticas"))
-    botonoEstadisticas.grid(column=0, row=4)
+    botonoEstadisticas = tk.Button(ventanaFinal, text ="Estadísticas", bg="#4F67E0", foreground="white",font="ms-sans-serif 12", command = lambda: crearPaginaEstadisticas("ventanaFinal"))
+    botonoEstadisticas.grid(column=0, row=4, padx=50, ipady=5, pady=(0,15), sticky="we")
 
-    botonoHome = tk.Button(ventanaFinal, text ="Volver a inicio", command = lambda: raise_frame(frames["ventanaInicio"],400,500))
-    botonoHome.grid(column=2, row=4)
+    botonoHome = tk.Button(ventanaFinal, text ="Volver a inicio", bg="#4F67E0", foreground="white", font="ms-sans-serif 12", command = lambda: raise_frame(frames["ventanaInicio"],270,400))
+    botonoHome.grid(column=2, row=4, padx=50, ipady=5,pady=(0,15), sticky="we")
     idEstadistica = guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),gano)
 
-    botonGuardarRepeticion = tk.Button(ventanaFinal, text ="Guardar repetición", command = lambda: guardarRepeticion(idEstadistica))
-    botonGuardarRepeticion.grid(column=1, row=4)
+    botonGuardarRepeticion = tk.Button(ventanaFinal, text ="Guardar repetición", bg="#4F67E0", foreground="white",font="ms-sans-serif 12",  command = lambda: guardarRepeticion(idEstadistica))
+    botonGuardarRepeticion.grid(column=1, row=4, padx=50, ipady=5,pady=(0,15), sticky="we")
     print(movRepeticion)
 
 def crearPaginaEstadisticas(ventanaAnterior):
     global ventana
     cambiarTama(1280,720)
     ventanaEstadisticas = crearFrame()
-    ventanaEstadisticas['bg'] = "red"
     ventanaEstadisticas.columnconfigure((0),weight=1, uniform="ventanaEstadisticas")
     ventanaEstadisticas.rowconfigure((2), weight=1)
     frames['ventanaEstadisticas'] = ventanaEstadisticas
@@ -309,27 +312,29 @@ def crearPaginaEstadisticas(ventanaAnterior):
     elif(ventanaAnterior == "ventanaFinal"):
         x =1280
         y=720
-    botonVolver = tk.Button(ef1, text ="Volver", command = lambda: raise_frame(frames[ventanaAnterior],x,y))
+    botonVolver = tk.Button(ef1, text ="<", font="ms-sans-serif 18 bold",borderwidth=0, command = lambda: raise_frame(frames[ventanaAnterior],x,y))
     botonVolver.grid(column=0, row=0, sticky=W,padx=2, columnspan=1)
-    tk.Label(ef1, text="Estadisticas").grid(column=1, row=0,sticky=W)
+    tk.Label(ef1, text="Estadisticas",font="ms-sans-serif 18 bold").grid(column=1, row=0,sticky=W)
    
     indicesTabla = tk.Frame(ventanaEstadisticas)
     indicesTabla.grid(column=0, row=1,sticky=NSEW)
     indicesTabla.columnconfigure((0,1,2,3,4,5), weight=1, uniform="ef2Uni")
-    tk.Label(indicesTabla, text="Nickname").grid(column=0, row=0, sticky= "we")
-    tk.Label(indicesTabla, text="Movimientos").grid(column=1, row=0, sticky= "we")
-    tk.Label(indicesTabla, text="Sugerencias").grid(column=2, row=0, sticky= "we")
-    tk.Label(indicesTabla, text="Tiempo").grid(column=3, row=0, sticky= "we")
-    tk.Label(indicesTabla, text="Tipo finalización").grid(column=4, row=0, sticky= "we")
-    tk.Label(indicesTabla, text="Repetición").grid(column=5, row=0, sticky= "we")
-    tk.Label(indicesTabla, text = "tttttttttttttt").grid(column=6, row=0, sticky= "we")
+    tk.Label(indicesTabla, text="Nickname", font="ms-sans-serif 14", bg="#4F67E0", fg="white").grid(column=0, row=0, sticky= "we", ipady=10)
+    tk.Label(indicesTabla, text="Movimientos", font="ms-sans-serif 14", bg="#4F67E0", fg="white").grid(column=1, row=0, sticky= "we", ipady=10)
+    tk.Label(indicesTabla, text="Sugerencias", font="ms-sans-serif 14", bg="#4F67E0", fg="white").grid(column=2, row=0, sticky= "we", ipady=10)
+    tk.Label(indicesTabla, text="Tiempo", font="ms-sans-serif 14", bg="#4F67E0", fg="white").grid(column=3, row=0, sticky= "we", ipady=10)
+    tk.Label(indicesTabla, text="Tipo finalización", font="ms-sans-serif 14", bg="#4F67E0", fg="white").grid(column=4, row=0, sticky= "we", ipady=10)
+    tk.Label(indicesTabla, text="Repetición", font="ms-sans-serif 14", bg="#4F67E0", fg="white").grid(column=5, row=0, sticky= "we", ipady=10)
+    #tk.Label(indicesTabla, text = "ttt",font="ms-sans-serif 14", bg="#4F67E0", fg="#4F67E0").grid(column=6, row=0, sticky= "we")
 
 
     ef2Scroll = ScrollableFrame(ventanaEstadisticas)
     ef2Scroll.grid(column=0,row=2,sticky=NSEW)
     ef2 = ef2Scroll.scrollable_frame
-    ef2.columnconfigure((0,1,2,3,4,5), weight=1, uniform="ef2Uni")
-    
+    ef2.columnconfigure(0, weight=1)
+    ef2.columnconfigure((0,1,2,3,4,5), weight=1, uniform="ef2Uni2")
+
+
 
     
 
@@ -338,15 +343,16 @@ def crearPaginaEstadisticas(ventanaAnterior):
 
     fil = 1 
     for estadistica in listaEstadisticas:
-        tk.Label(ef2, text=estadistica[1], borderwidth=2, relief="sunken"   ).grid(column=0, row=fil, sticky="we")
-        tk.Label(ef2, text=estadistica[2], borderwidth=2, relief="sunken"   ).grid(column=1, row=fil, sticky="we")
-        tk.Label(ef2, text=estadistica[3], borderwidth=2, relief="sunken"   ).grid(column=2, row=fil, sticky="we")
-        tk.Label(ef2, text=estadistica[4], borderwidth=2, relief="sunken"   ).grid(column=3, row=fil, sticky="we")
-        tk.Label(ef2, text=estadistica[5], borderwidth=2, relief="sunken"   ).grid(column=4, row=fil, sticky="we")
+        tk.Label(ef2, text=estadistica[1], font="ms-sans-serif 10", bg="#f3f3f3"  ).grid(column=0, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[2], font="ms-sans-serif 10", bg="#f3f3f3" ).grid(column=1, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[3],font="ms-sans-serif 10", bg="#f3f3f3"   ).grid(column=2, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[4],font="ms-sans-serif 10" , bg="#f3f3f3"  ).grid(column=3, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[5],font="ms-sans-serif 10", bg="#f3f3f3"   ).grid(column=4, row=fil, sticky="we",ipadx = 10,  ipady=5)
         if os.path.isfile("repeticiones/"+str(estadistica[0])+".txt") and os.path.isfile("laberintos/"+str(estadistica[0])+".txt"):
-            tk.Button(ef2, text =estadistica[0],       command = lambda x= estadistica[0]: getPaginaRepeticion(x)).grid(column=5, row=fil, sticky="we")
+
+            tk.Button(ef2, text ="Ver repeticiónes",command = lambda x= estadistica[0]: getPaginaRepeticion(x) , bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we",ipadx=25, padx=5, pady=8)
         else:
-            tk.Button(ef2, text ="Repetición no disponible",state=DISABLED).grid(column=5, row=fil, sticky="we")
+            tk.Button(ef2, text ="Repetición no disponible",state=DISABLED, bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we", ipadx=25, padx=5, pady=8)
         fil+=1
     
     print (listaEstadisticas)

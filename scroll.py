@@ -2,7 +2,7 @@
 
 
 from tkinter import Frame, Canvas, Scrollbar
-
+import tkinter as tk
 
 class ScrollableFrame(Frame):
     def __init__(self, container, *args, **kwargs):
@@ -22,5 +22,5 @@ class ScrollableFrame(Frame):
 
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        canvas.pack(side="left", fill="both", expand=True)
+        canvas.pack(side="left", fill=tk.BOTH, expand=True)
         scrollbar.pack(side="right", fill="y")
