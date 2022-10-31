@@ -1,6 +1,8 @@
 #python3 -m pip install pillow
 
+from cgitb import text
 import os
+from tkinter import font
 from turtle import left
 from pyswip import Prolog
 import tkinter as tk
@@ -55,17 +57,18 @@ laberinto = []
 tablero = []
 posX = 0
 posY = 0
-
+inicioX = 0
+inicioY=0
 finX = 0
 finY = 0
 gano = "inactivo"
 
 fichaAnterior = "i"
-flechas={"at":"←","ad":"→","ar":"↑","ab":"↓","inter":"+","i":"⌂","f":"▧","x":"x","O":"O"}
 colores = {"x":"#211438",
             "auto": "#9734FA",
             "sugerencia" : "#9734FA",
             "O":"#71A85E",
+            "◯":"#71A85E",
             "i":"#D7FA0F",
             "inicio": "#D7FA0F",
             "f":"#FA5041",
@@ -131,32 +134,33 @@ def crearPaginaTablero():
 
     
     contadorSug = tk.StringVar(frames["ventanaTablero"],value="Sugerencias disponibles: "+str(numeroSugerencias))
-    tk.Label(ventanaTablero,textvariable=contadorSug, relief='sunken', borderwidth=2).grid(row=0, column=0, sticky="we")
+    tk.Label(ventanaTablero,textvariable=contadorSug, bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(row=0, column=0, sticky=NSEW)
 
-    tk.Label(ventanaTablero, textvariable=cronometro, relief='sunken', borderwidth=2).grid(row=0, column=1, sticky=NSEW)
+    tk.Label(ventanaTablero, textvariable=cronometro,  bg="#4F67E0", fg="white", font="ms-sans-serif 26").grid(row=0, column=1, sticky=NSEW)
 
     contadorMov = tk.StringVar(frames["ventanaTablero"],value="Numero de movimientos: "+str(numeroMovimientos))
-    tk.Label(ventanaTablero,textvariable=contadorMov, relief='sunken', borderwidth=2).grid(row=0, column=2, sticky=NSEW)
+    tk.Label(ventanaTablero,textvariable=contadorMov,  bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(row=0, column=2, sticky=NSEW)
 
 
-    botSolicitarSugerencia= tk.Button(ventanaTablero, text ="Sugerencia", command = lambda:solicitarSugerencia())
-    botSolicitarSugerencia.grid(row=2, column=0, sticky=NSEW)
+    botSolicitarSugerencia= tk.Button(ventanaTablero, text ="Solicitar Sugerencia", command = lambda:solicitarSugerencia(botSolicitarSugerencia), bg="#4F67E0", foreground="white")
+    botSolicitarSugerencia.grid(row=2, column=0, sticky=NSEW, padx=20,pady=(0,10))
     
-    botonVerificar= tk.Button(ventanaTablero, text ="verificar", command = lambda:verificar())
-    botonVerificar.grid(row=2, column=1, sticky=NSEW)
+    botonVerificar= tk.Button(ventanaTablero, text ="Verificar posición", command = lambda:verificar(botonVerificar), bg="#4F67E0", foreground="white")
+    botonVerificar.grid(row=2, column=1, sticky=NSEW, padx=20,pady=(0,10), ipady=5)
 
-    botonReiniciar= tk.Button(ventanaTablero, text ="reiniciar", command = lambda:reiniciar())
-    botonReiniciar.grid( row=2, column=2, sticky=NSEW)
+    botonReiniciar= tk.Button(ventanaTablero, text ="Reiniciar", command = lambda:reiniciar(), bg="#4F67E0", foreground="white")
+    botonReiniciar.grid( row=2, column=2, sticky=NSEW, padx=20,pady=(0,10), ipady=5)
 
     framebot = tk.Frame(ventanaTablero)
     framebot.grid(row=3, column=0, columnspan=3,sticky=NSEW)
     framebot.grid_columnconfigure((0,1), weight=1, uniform="elemTab2")
     
-    botonAbandonar= tk.Button(framebot, text ="Abandonar", command = lambda:abandonarPartida())
-    botonAbandonar.grid(row = 0, column=0, sticky=NSEW)
+    botonSol= tk.Button(framebot, text ="Autosolucionar", command = lambda:autoSolucionar(botonSol), bg="#4F67E0", fg="white")
+    botonSol.grid(row = 0, column=0, sticky=NSEW, padx=20, pady=(0,10), ipady=5)
     
-    botonSol= tk.Button(framebot, text ="Solucion", command = lambda:autoSolucionar())
-    botonSol.grid(row = 0, column=1, sticky=NSEW)
+    botonAbandonar= tk.Button(framebot, text ="Abandonar partida", command = lambda:abandonarPartida(), bg="#4F67E0", fg="white")
+    botonAbandonar.grid(row = 0, column=1, sticky=NSEW, padx=20, pady=(0,10), ipady=5)
+    
 
 
 
@@ -165,49 +169,49 @@ def crearPaginaTablero():
     frameTablero.rowconfigure(0, weight=1)
     frameTablero.columnconfigure((0,2), weight=1, uniform="col")
     tablero = crearTablero(frameTablero,laberinto)
-    tablero.grid(row=0,column = 1)
+    tablero.grid(row=0,column = 1, pady=15)
 
 
-    frameCol0 = Frame(frameTablero, bg="red")
+    frameCol0 = Frame(frameTablero)
     frameCol0.grid(row=0, column=0, sticky=NSEW)
     frameCol0.columnconfigure((0), weight=1, uniform="col1")
     frameCol0.rowconfigure((0,1,2,3,4), weight=1, uniform="row1")
     
 
-    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=0, column=0,sticky=E)
-    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=0, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+    tk.Label(frameCol0, text="Permite movimiento hacia arriba", font="ms-sans-serif 10").grid(row=0, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["ar"]).grid(row=0, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
 
-    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=1, column=0,sticky=E)
-    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=1, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+    tk.Label(frameCol0, text="Permite movimiento hacia abajo", font="ms-sans-serif 10").grid(row=1, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["ab"]).grid(row=1, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
     
-    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=2, column=0,sticky=E)
-    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=2, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+    tk.Label(frameCol0, text="Permite movimiento hacia atras", font="ms-sans-serif 10").grid(row=2, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["at"]).grid(row=2, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
 
-    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=3, column=0,sticky=E)
-    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=3, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+    tk.Label(frameCol0, text="Permite movimiento hacia adelante", font="ms-sans-serif 10").grid(row=3, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["ad"]).grid(row=3, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
 
-    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=4, column=0,sticky=E)
-    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=4, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+    tk.Label(frameCol0, text="Permite movimiento en las cuatro direcciones", font="ms-sans-serif 10").grid(row=4, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["inter"]).grid(row=4, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
    
-    frameCol2 = Frame(frameTablero, bg="blue")
+    frameCol2 = Frame(frameTablero)
     frameCol2.grid(row=0, column=2, sticky=NSEW)
     frameCol2.columnconfigure((1), weight=1, uniform="col1")
     frameCol2.rowconfigure((0,1,2,3,4), weight=1, uniform="row1")
 
-    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=0, column=1,sticky=W)
-    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=0, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+    tk.Label(frameCol2, text="Posición actual").grid(row=0, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2,bg=colores["O"]).grid(row=0, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
 
-    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=1, column=1,sticky=W)
-    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=1, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+    tk.Label(frameCol2, text="Muro").grid(row=1, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg=colores["x"]).grid(row=1, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
     
-    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=2, column=1,sticky=W)
-    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=2, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+    tk.Label(frameCol2, text="Inicio").grid(row=2, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg=colores["i"]).grid(row=2, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
 
-    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=3, column=1,sticky=W)
-    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=3, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+    tk.Label(frameCol2, text="Final").grid(row=3, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg=colores["f"]).grid(row=3, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
 
-    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=4, column=1,sticky=W)
-    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=4, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+    tk.Label(frameCol2, text="Sugerencia/Autosolución").grid(row=4, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg = colores["sugerencia"]).grid(row=4, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
 
     if not tablero:
         raise_frame(frames["ventanaPreJuego"],400,500)
@@ -464,10 +468,11 @@ def solicitarArchivo():
 
 
 def reestablecerValores ():
-    global posX,posY, finX, finY, gano,numeroMovimientos, numeroSugerencias, tiempoInicio,cronometro, movRepeticion
+    global posX,posY, inicioX, inicioY, finX, finY, gano,numeroMovimientos, numeroSugerencias, tiempoInicio,cronometro, movRepeticion
     posX = 0
     posY = 0
-
+    inicioX = 0
+    inicioY = 0
     finX = 0
     finY = 0
     gano = "inactivo"
@@ -510,7 +515,7 @@ def transformarLaberinto(laberintoProlog):
     
 
 def obtenerPosicionInicial():
-    global laberinto, posX, posY, finX, finY,fichaAnterior,numeroMovimientos,  movRepeticion
+    global laberinto, posX, posY, finX, finY,fichaAnterior,numeroMovimientos,  movRepeticion, inicioX, inicioY
     numeroMovimientos = 0
     x = 0
     y = 0
@@ -519,6 +524,8 @@ def obtenerPosicionInicial():
             if j == 'i':
                 posX = x
                 posY = y
+                inicioX = x
+                inicioY = y
                 laberinto[posX][posY]="O"
                 movRepeticion += [["inicio",x,y]]
             if j == "f":
@@ -549,7 +556,7 @@ solucionLaberinto= []
 #tomando en cuenta las diferencias entre los objetivos 
 def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
     actual = laberintoSol[puntoInicio[0]][puntoInicio[1]] #obtener actual
-    if actual == "O":
+    if actual == "O" or actual =="◯":
         actual = fichaAnterior
     laberintoSol[puntoInicio[0]][puntoInicio[1]] = "v" #marcar
     if puntoInicio == puntoFinal:  #si la posición de la p
@@ -596,7 +603,7 @@ def solucionarLaberinto2(laberintoSol, puntoInicio, puntoFinal):
 
 
     ##############################################################################################
-def solicitarSugerencia():
+def solicitarSugerencia(boton):
     global solucionLaberinto,tablero,numeroSugerencias, movRepeticion
     if numeroSugerencias>0:
         obtenerSolucion()
@@ -609,25 +616,25 @@ def solicitarSugerencia():
                 pos = (infoGrid["row"], infoGrid["column"])
                 print("col: ",infoGrid["column"]," row: ", infoGrid["row"], " texto: ",i["text"])
                 if sugerencia == pos:
-                    i.config(bg="purple")
-                    ventana.after(2000,mostrarSugerencia,i)
+                    i.config(bg="purple", fg = "purple")
+                    ventana.after(3000,mostrarSugerencia,i)
                     numeroSugerencias -=1
                     contadorSug.set("Sugerencias disponibles: "+str(numeroSugerencias))
                     break
         else:
-            print("no hay solución, gg")
+            boton["bg"]="red"
+            boton["text"] = "No hay solución, GG"
     else:
-        print("no quedan sugerencias")
-        
-    print("sssssssssssssssssssssssssssssssss")
+        boton["bg"]="red"
+        boton["text"] = "No quedan sugerencias"
 
 def mostrarSugerencia(ficha):
-   ficha.config(bg=colores[ficha["text"]])
+   ficha.config(bg=colores[ficha["text"]],fg=colores[ficha["text"]])
     
 
 
 def crearTablero(ventanaTablero,laberintoTablero):
-    global ventana, laberinto, colores, tablero,flechas
+    global ventana, laberinto, colores, tablero
     x = 550
     y = 550
     print("---------------------------------"+str(x))
@@ -657,8 +664,8 @@ def crearTablero(ventanaTablero,laberintoTablero):
     
 
 
-def autoSolucionar():
-    global solucionLaberinto, gano, movRepeticion
+def autoSolucionar(boton):
+    global solucionLaberinto, gano, movRepeticion, posX, posY, inicioX, inicioY
     obtenerSolucion()
     if solucionLaberinto !=[]:
         gano = "auto"
@@ -666,7 +673,10 @@ def autoSolucionar():
             movRepeticion += [["auto",i[0],i[1]]]
         crearPaginaFinal()
     else:
-        print("no hay solución, gg")
+        posX = inicioX
+        posY = inicioY
+        autoSolucionar(boton)
+
 
 def mostrarSolucion(tab):
     child = tab.winfo_children()
@@ -677,14 +687,14 @@ def mostrarSolucion(tab):
         i.config(bg=colores[i["text"]])
         if pos in solucionLaberinto:
             print ("Si")
-            i.config(bg="purple")
+            i.config(bg="purple", fg="white", text="◯")
     
 
 def obtenerSolucion():
     global  posX, posY, finX, finY, solucionLaberinto
     solucionLaberinto = []
     laberintoTemp = deepcopy(laberinto)
-    solucionarLaberinto2(laberintoTemp,(posX,posY),(finX, finY))
+    solucionarLaberinto(laberintoTemp,(posX,posY),(finX, finY))
     #verLaberinto()##################
     #########raise_frame(frames["ventanaInicio"])
     solucionLaberinto.reverse()
@@ -692,13 +702,20 @@ def obtenerSolucion():
     
 
 
-def verificar():
-    global solucionLaberinto, gano
+def verificar(boton):
+    global ventana, solucionLaberinto, gano
     obtenerSolucion()
     if solucionLaberinto !=[]:
-        print("si forma parte del camino")
+        boton["bg"] = "green"
+        boton["text"] = "✓"
+        ventana.after(5000, verificarAux,boton)
     else:
-            print("no forma parte del camino")
+        boton["bg"] = "red"
+        boton["text"] = "✕"
+        ventana.after(5000, verificarAux,boton)
+def verificarAux(boton):
+    boton["bg"] = "#4F67E0"
+    boton["text"] = "Verificar posición"
 
 #mover ficha en interfaz
 def moverFichaAux(fichaActual, fichaSiguiente):
@@ -711,9 +728,13 @@ def moverFichaAux(fichaActual, fichaSiguiente):
         if fichaActual == pos:
             print("encontré la ficha actual")
             i["bg"] = colores[fichaAnterior]
+            i["fg"] = colores[fichaAnterior]
+            i["text"] = fichaAnterior
         elif fichaSiguiente == pos:
             print("encontré la siguiente")
             i["bg"] = colores["O"]
+            i["fg"] ="white"
+            i["text"] ="◯"
 
 def moverFicha(i):
     global posX, posY,fichaAnterior, numeroMovimientos, tiempoInicio, laberinto,gano,movRepeticion
@@ -731,7 +752,7 @@ def moverFicha(i):
             fichaTemp = fichaAnterior
             fichaAnterior = laberinto[siguientePunto[0]][siguientePunto[1]]
             laberinto[posX][posY] = fichaTemp
-            laberinto[siguientePunto[0]][siguientePunto[1]] = 'O'
+            laberinto[siguientePunto[0]][siguientePunto[1]] = '◯'
             posY+=puntosMovimientos[i][1]
             posX+=puntosMovimientos[i][0]
             numeroMovimientos+=1
