@@ -1,35 +1,52 @@
-
+#python3 -m pip install pillow
 
 import os
+import re
+from turtle import width
 from pyswip import Prolog
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import *
+from PIL import ImageTk, Image  
 from copy import deepcopy
 from tabulate import tabulate
 import time
 from datetime import datetime
 import uuid
+from scroll import ScrollableFrame
+import scroll
 
 
 def getVentana():
+    global ventana
     ventana = Tk()
-    anchoVentana = 1280 
-    altoVentana = 720
+    x = 1280
+    y = 720
 
-    # get the screen dimension
     anchoPantalla = ventana.winfo_screenwidth()
     altoPantalla = ventana.winfo_screenheight()
 
     # find the center point
-    centroX = int(anchoPantalla/2 - anchoVentana / 2)
-    centroY = int(altoPantalla/2 - altoVentana / 2)
+    centroX = int(anchoPantalla/2 - x / 2)
+    centroY = int(altoPantalla/2 - y / 2)
 
     # set the position of the window to the center of the screen
-    ventana.geometry(f'{anchoVentana}x{altoVentana}+{centroX}+{centroY}')
+    ventana.geometry(f'{x}x{y}+{centroX}+{centroY}')
     ventana.columnconfigure(0,weight=1, uniform="vent")
+    ventana.rowconfigure(0,weight=1)
+    ventana.resizable(width=False, height=False)
     return ventana
 
+def cambiarTama(x, y):
+    global ventana
+
+    anchoPantalla = ventana.winfo_screenwidth()
+    altoPantalla = ventana.winfo_screenheight()
+    centroX = int(anchoPantalla/2 - x / 2)
+    centroY = int(altoPantalla/2 - y / 2)
+
+    # set the position of the window to the center of the screen
+    ventana.geometry(f'{x}x{y}+{centroX}+{centroY}')
 ventana = getVentana()
 prolog = Prolog()
 prolog.consult("logica.pro")
@@ -68,90 +85,120 @@ numeroSugerencias = 10
 tiempoInicio = datetime.now()
 
 laberintoPrueba = [['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'], ['x', 'ar', 'x', 'x', 'ad', 'ad', 'ad', 'inter', 'ad', 'inter', 'x'], ['i', 'inter', 'ad', 'ad', 'inter', 'x', 'x', 'ab', 'x', 'ab', 'x'], ['x', 'ab', 'x', 'x', 'x', 'inter', 'at', 'inter', 'x', 'ab', 'x'], ['x', 'ab', 'x', 'x', 'x', 'ab', 'x', 'ab', 'x', 'x', 'x'], ['x', 'ab', 'x', 'x', 'inter', 'inter', 'x', 'ab', 'x', 'inter', 'f'], ['x', 'ab', 'x', 'x', 'ab', 'x', 'x', 'inter', 'inter', 'inter', 'x'], ['x', 'ab', 'x', 'x', 'ab', 'x', 'x', 'x', 'ar', 'x', 'x'], ['x', 'ab', 'x', 'at', 'inter', 'inter', 'ad', 'ad', 'inter', 'at', 'x'], ['x', 'ab', 'x', 'ar', 'x', 'ab', 'x', 'x', 'ab', 'ar', 'x'], ['x', 'inter', 'ad', 'inter', 'x', 'inter', 'ad', 'x', 'ab', 'inter', 'x'], ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x']]
-def raise_frame(frame):
+def raise_frame(frame,x,y):
+    cambiarTama(x,y)
     frame.tkraise()
 
 def crearPaginaInicio():
-    global ventana
+    global ventana,img
+    cambiarTama(270,400)
     ventanaInicio  = crearFrame()
+    ventanaInicio["bg"] = "red"
     frames['ventanaInicio'] = ventanaInicio
+    ventanaInicio.grid_columnconfigure(0, weight=1)
+    ventanaInicio.grid_rowconfigure(0, weight=1)
+    ventanaInicio.grid_rowconfigure((1,2,3), weight=2)
+    img =ImageTk.PhotoImage(Image.open("img/inicio.jpg").resize((350,210), Image.ANTIALIAS))
+    #img =img.resize((250,250), Image.ANTIALIAS)
+    #image1.resize((400,))
+    imagenInicio  = tk.Label(ventanaInicio, image=img)
+    imagenInicio.grid(row=0,column=0)
     botonJuegoNuevo= tk.Button(ventanaInicio, text ="Juego Nuevo", command = lambda: crearPaginaPreJuego())
-    botonJuegoNuevo.grid(column=0,row=0)
+    botonJuegoNuevo.grid(column=0,row=1, padx=15, sticky=EW)
+
 
     botonEstadisticas= tk.Button(ventanaInicio, text ="Estadisticas", command = lambda: crearPaginaEstadisticas("ventanaInicio"))
-    botonEstadisticas.grid(column=0,row=1)
+    botonEstadisticas.grid(column=0,row=2, padx=15, sticky=EW)
 
-
+    botonRepeticiones= tk.Button(ventanaInicio, text ="Repeticiones", command = lambda: crearPaginaEstadisticas("ventanaInicio"))
+    botonRepeticiones.grid(column=0,row=3, padx=15, sticky=EW)
    
     
 
 def crearPaginaTablero():
-    global ventana, contadorMov, contadorSug, gano, laberinto
+    global ventana, contadorMov, contadorSug, gano, laberinto, tablero
+    cambiarTama(1280,720)
     ventanaTablero  = crearFrame()
     frames['ventanaTablero'] = ventanaTablero
-    tk.Label(ventanaTablero, textvariable=cronometro).grid(column=0, row=0, sticky=NSEW)
-
-    contadorMov = tk.StringVar(frames["ventanaTablero"],value="Numero de movimientos: "+str(numeroMovimientos))
-    tk.Label(ventanaTablero,textvariable=contadorMov).grid(column=1,row=0)
-
-    contadorSug = tk.StringVar(frames["ventanaTablero"],value="Sugerencias disponibles: "+str(numeroSugerencias))
-    tk.Label(ventanaTablero,textvariable=contadorSug).grid(column=1,row=1)
+    ventanaTablero.grid(sticky=NSEW)
+    ventanaTablero.columnconfigure((0,1,2),weight=1, uniform="elemTab")
 
     
-    botonVerificar= tk.Button(ventanaTablero, text ="verificar", command = lambda:verificar())
-    botonVerificar.grid(column=2, row=0)
+    contadorSug = tk.StringVar(frames["ventanaTablero"],value="Sugerencias disponibles: "+str(numeroSugerencias))
+    tk.Label(ventanaTablero,textvariable=contadorSug, relief='sunken', borderwidth=2).grid(row=0, column=0, sticky="we")
 
-    botonSol= tk.Button(ventanaTablero, text ="Solucion", command = lambda:autoSolucionar())
-    botonSol.grid(column=2, row=1)
+    tk.Label(ventanaTablero, textvariable=cronometro, relief='sunken', borderwidth=2).grid(row=0, column=1, sticky=NSEW)
+
+    contadorMov = tk.StringVar(frames["ventanaTablero"],value="Numero de movimientos: "+str(numeroMovimientos))
+    tk.Label(ventanaTablero,textvariable=contadorMov, relief='sunken', borderwidth=2).grid(row=0, column=2, sticky=NSEW)
+
 
     botSolicitarSugerencia= tk.Button(ventanaTablero, text ="Sugerencia", command = lambda:solicitarSugerencia())
-    botSolicitarSugerencia.grid(column=2, row=2)
-
-    botonAbandonar= tk.Button(ventanaTablero, text ="Abandonar", command = lambda:abandonarPartida())
-    botonAbandonar.grid(column=2, row=3)
+    botSolicitarSugerencia.grid(row=2, column=0, sticky=NSEW)
+    
+    botonVerificar= tk.Button(ventanaTablero, text ="verificar", command = lambda:verificar())
+    botonVerificar.grid(row=2, column=1, sticky=NSEW)
 
     botonReiniciar= tk.Button(ventanaTablero, text ="reiniciar", command = lambda:reiniciar())
-    botonReiniciar.grid(column=2, row=4)
+    botonReiniciar.grid( row=2, column=2, sticky=NSEW)
+
+    framebot = tk.Frame(ventanaTablero)
+    framebot.grid(row=3, column=0, columnspan=3,sticky=NSEW)
+    framebot.grid_columnconfigure((0,1), weight=1, uniform="elemTab2")
+    
+    botonAbandonar= tk.Button(framebot, text ="Abandonar", command = lambda:abandonarPartida())
+    botonAbandonar.grid(row = 0, column=0, sticky=NSEW)
+    
+    botonSol= tk.Button(framebot, text ="Solucion", command = lambda:autoSolucionar())
+    botonSol.grid(row = 0, column=1, sticky=NSEW)
+
+
 
 
     tablero = crearTablero(ventanaTablero,laberinto)
+    tablero.grid(row=1,column = 0, columnspan=3)
     if not tablero:
-        raise_frame(frames["ventanaPreJuego"])
+        raise_frame(frames["ventanaPreJuego"],400,500)
 
     else:
-        tablero.grid(column=0,row=1,rowspan=5)
+        
         gano = "activo"
 
 
 
 def crearPaginaPreJuego():
     global ventana, laberintoSeleccionado, nickname
+    cambiarTama(270,400)
     ventanaPreJuego  = crearFrame()
     frames['ventanaPreJuego'] = ventanaPreJuego
 
-    tk.Label(ventanaPreJuego,text="Nickname: ").grid(column=0,row=0)
+    tk.Label(ventanaPreJuego, text="Seleccionar laberinto").grid(row=0, column=0)
+    tk.Label(ventanaPreJuego,text="Nickname: ").grid(row=1, column=0)
 
     nickname = tk.Entry(ventanaPreJuego)
+    nickname.grid(row=2, column=0, columnspan=2, sticky=NSEW)
+
+    tk.Label(ventanaPreJuego,text="Laberinto: ").grid(row=3, column=0)
+
     
-    nickname.grid(column=1,row=0)
-
-    tk.Label(ventanaPreJuego,text="Laberinto: ").grid(column=0,row=1)
-
-    botonArchivo = tk.Button(ventanaPreJuego, text ="Archivo", command = lambda: solicitarArchivo())
-    botonArchivo.grid(column=1, row=1)
-
     #laberintoSeleccionado = tk.StringVar(frames["ventanaPreJuego"],value=rutaArchivoLaberinto)
     laberintoSeleccionado = tk.StringVar(frames["ventanaPreJuego"],value="laberinto.txt")
-    tk.Label(ventanaPreJuego,textvariable=laberintoSeleccionado).grid(column=0,row=2)
+    tk.Label(ventanaPreJuego,textvariable=laberintoSeleccionado, borderwidth=1, relief="sunken").grid(row=4, column=0, columnspan=2, sticky=NSEW)
+
+    botonArchivo = tk.Button(ventanaPreJuego, text ="Archivo", command = lambda: solicitarArchivo())
+    botonArchivo.grid(row=5, column=0, columnspan=2, sticky=NSEW)
 
     botonIniciarJuego = tk.Button(ventanaPreJuego, text ="Iniciar", command = lambda: iniciarJuego())
-    botonIniciarJuego.grid(column=1, row=3)
+    botonIniciarJuego.grid(row=6, column=1, sticky=NSEW)
 
-    botonVolver = tk.Button(ventanaPreJuego, text ="Volver", command = lambda: raise_frame(frames["ventanaInicio"]))
-    botonVolver.grid(column=0, row=3)
+    botonVolver = tk.Button(ventanaPreJuego, text ="Volver", command = lambda: raise_frame(frames["ventanaInicio"], 400,500))
+    botonVolver.grid(row=6, column=0, sticky=NSEW)
+
+    ventanaPreJuego.grid_columnconfigure((0,1),weight=1, uniform="colPre")
 
 def crearPaginaFinal():
     global ventana, tablero, movRepeticion,laberinto
+    cambiarTama(1280,720)
     ventanaFinal = crearFrame()
     ventanaFinal.grid(sticky=NSEW)
     ventanaFinal.columnconfigure((0,1,2),weight=1, uniform="venFinal")
@@ -175,7 +222,7 @@ def crearPaginaFinal():
     botonoEstadisticas = tk.Button(ventanaFinal, text ="Estadísticas", command = lambda: print("estadisticas"))
     botonoEstadisticas.grid(column=0, row=4)
 
-    botonoHome = tk.Button(ventanaFinal, text ="Volver a inicio", command = lambda: raise_frame(frames["ventanaInicio"]))
+    botonoHome = tk.Button(ventanaFinal, text ="Volver a inicio", command = lambda: raise_frame(frames["ventanaInicio"],400,500))
     botonoHome.grid(column=2, row=4)
     idEstadistica = guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),gano)
 
@@ -185,27 +232,45 @@ def crearPaginaFinal():
 
 def crearPaginaEstadisticas(ventanaAnterior):
     global ventana
+    cambiarTama(1280,720)
     ventanaEstadisticas = crearFrame()
+    ventanaEstadisticas['bg'] = "red"
+    ventanaEstadisticas.columnconfigure((0),weight=1, uniform="ventanaEstadisticas")
+    ventanaEstadisticas.rowconfigure((2), weight=1)
     frames['ventanaEstadisticas'] = ventanaEstadisticas
 
+
+
+
     ef1 = tk.Frame(ventanaEstadisticas)
-    #ef1.columnconfigure(0,weight=1)
     ef1.grid(column=0, row=0,sticky=NSEW)
-
-    botonVolver = tk.Button(ef1, text ="Volver", command = lambda: raise_frame(frames[ventanaAnterior]))
+    if(ventanaAnterior=="ventanaInicio"):
+        x = 400
+        y = 500
+    elif(ventanaAnterior == "ventanaFinal"):
+        x =1280
+        y=720
+    botonVolver = tk.Button(ef1, text ="Volver", command = lambda: raise_frame(frames[ventanaAnterior],x,y))
     botonVolver.grid(column=0, row=0, sticky=W,padx=2, columnspan=1)
-
     tk.Label(ef1, text="Estadisticas").grid(column=1, row=0,sticky=W)
+   
+    indicesTabla = tk.Frame(ventanaEstadisticas)
+    indicesTabla.grid(column=0, row=1,sticky=NSEW)
+    indicesTabla.columnconfigure((0,1,2,3,4,5), weight=1, uniform="ef2Uni")
+    tk.Label(indicesTabla, text="Nickname").grid(column=0, row=0, sticky= "we")
+    tk.Label(indicesTabla, text="Movimientos").grid(column=1, row=0, sticky= "we")
+    tk.Label(indicesTabla, text="Sugerencias").grid(column=2, row=0, sticky= "we")
+    tk.Label(indicesTabla, text="Tiempo").grid(column=3, row=0, sticky= "we")
+    tk.Label(indicesTabla, text="Tipo finalización").grid(column=4, row=0, sticky= "we")
+    tk.Label(indicesTabla, text="Repetición").grid(column=5, row=0, sticky= "we")
+    tk.Label(indicesTabla, text = "tttttttttttttt").grid(column=6, row=0, sticky= "we")
 
 
-    ef2 = tk.Frame(ventanaEstadisticas)
-    ef2.grid(column=0, row=2,sticky=NSEW)
-    tk.Label(ef2, text="Nickname").grid(column=1, row=0)
-    tk.Label(ef2, text="Movimientos").grid(column=2, row=0)
-    tk.Label(ef2, text="Sugerencias").grid(column=3, row=0)
-    tk.Label(ef2, text="Tiempo").grid(column=4, row=0)
-    tk.Label(ef2, text="Tipo finalización").grid(column=5, row=0)
-    tk.Label(ef2, text="Repetición").grid(column=6, row=0)
+    ef2Scroll = ScrollableFrame(ventanaEstadisticas)
+    ef2Scroll.grid(column=0,row=2,sticky=NSEW)
+    ef2 = ef2Scroll.scrollable_frame
+    ef2.columnconfigure((0,1,2,3,4,5), weight=1, uniform="ef2Uni")
+    
 
     
 
@@ -214,15 +279,15 @@ def crearPaginaEstadisticas(ventanaAnterior):
 
     fil = 1 
     for estadistica in listaEstadisticas:
-        tk.Label(ef2, text=estadistica[1]).grid(column=1, row=fil)
-        tk.Label(ef2, text=estadistica[2]).grid(column=2, row=fil)
-        tk.Label(ef2, text=estadistica[3]).grid(column=3, row=fil)
-        tk.Label(ef2, text=estadistica[4]).grid(column=4, row=fil)
-        tk.Label(ef2, text=estadistica[5]).grid(column=5, row=fil)
+        tk.Label(ef2, text=estadistica[1], borderwidth=2, relief="sunken"   ).grid(column=0, row=fil, sticky="we")
+        tk.Label(ef2, text=estadistica[2], borderwidth=2, relief="sunken"   ).grid(column=1, row=fil, sticky="we")
+        tk.Label(ef2, text=estadistica[3], borderwidth=2, relief="sunken"   ).grid(column=2, row=fil, sticky="we")
+        tk.Label(ef2, text=estadistica[4], borderwidth=2, relief="sunken"   ).grid(column=3, row=fil, sticky="we")
+        tk.Label(ef2, text=estadistica[5], borderwidth=2, relief="sunken"   ).grid(column=4, row=fil, sticky="we")
         if os.path.isfile("repeticiones/"+str(estadistica[0])+".txt") and os.path.isfile("laberintos/"+str(estadistica[0])+".txt"):
-            tk.Button(ef2, text =estadistica[0], command = lambda x= estadistica[0]: getPaginaRepeticion(x)).grid(column=6, row=fil)
+            tk.Button(ef2, text =estadistica[0],       command = lambda x= estadistica[0]: getPaginaRepeticion(x)).grid(column=5, row=fil, sticky="we")
         else:
-            tk.Button(ef2, text ="Repetición no disponible",state=DISABLED).grid(column=6, row=fil)
+            tk.Button(ef2, text ="Repetición no disponible",state=DISABLED).grid(column=5, row=fil, sticky="we")
         fil+=1
     
     print (listaEstadisticas)
@@ -332,8 +397,8 @@ def guardarRepeticion(id):
 
 def crearFrame():
     global ventana
-    frame = tk.Frame(ventana,width=ventana.winfo_width(), height=ventana.winfo_height())
-    frame.grid(column=0, row=0,sticky=NSEW)
+    frame = tk.Frame(ventana, height=720)
+    frame.grid(column=0, row=0, sticky=NSEW)
     return frame
 
 def solicitarArchivo():
