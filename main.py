@@ -1,8 +1,7 @@
 #python3 -m pip install pillow
 
 import os
-import re
-from turtle import width
+from turtle import left
 from pyswip import Prolog
 import tkinter as tk
 from tkinter import filedialog
@@ -14,7 +13,7 @@ import time
 from datetime import datetime
 import uuid
 from scroll import ScrollableFrame
-import scroll
+
 
 
 def getVentana():
@@ -63,19 +62,19 @@ gano = "inactivo"
 
 fichaAnterior = "i"
 flechas={"at":"←","ad":"→","ar":"↑","ab":"↓","inter":"+","i":"⌂","f":"▧","x":"x","O":"O"}
-colores = {"x":"#2E4053",
-            "O":"#5499C7",
-            "f":"#A6ACAF",
-            "i":"#AEB6BF",
-            "ad" : "#48C9B0",
+colores = {"x":"#211438",
+            "auto": "#9734FA",
+            "sugerencia" : "#9734FA",
+            "O":"#71A85E",
+            "i":"#D7FA0F",
+            "inicio": "#D7FA0F",
+            "f":"#FA5041",
+            "ar" : "#C9429E",
+            "ab": "#0A56AD",
+            "ad" : "#E28B48",
             "at" : "#F4D03F",
-            "ab": "#16A085",
-            "ar" : "#AF7AC5",
             "inter" : "#873600",
-            "auto": "#E67063",
             "normal" : "#16A085",
-            "sugerencia" : "#E67063",
-            "inicio": "#AEB6BF"
             }
 frames= {}
 movRepeticion = []
@@ -93,25 +92,31 @@ def crearPaginaInicio():
     global ventana,img
     cambiarTama(270,400)
     ventanaInicio  = crearFrame()
-    ventanaInicio["bg"] = "red"
+    ventanaInicio.tk_setPalette(background = "white")
+    ventanaInicio
     frames['ventanaInicio'] = ventanaInicio
     ventanaInicio.grid_columnconfigure(0, weight=1)
-    ventanaInicio.grid_rowconfigure(0, weight=1)
-    ventanaInicio.grid_rowconfigure((1,2,3), weight=2)
-    img =ImageTk.PhotoImage(Image.open("img/inicio.jpg").resize((350,210), Image.ANTIALIAS))
-    #img =img.resize((250,250), Image.ANTIALIAS)
-    #image1.resize((400,))
+    ventanaInicio.grid_rowconfigure(1, weight=1)
+    img =ImageTk.PhotoImage(Image.open("img/inicio.jpg").resize((300,200), Image.ANTIALIAS))
+
+
+    
     imagenInicio  = tk.Label(ventanaInicio, image=img)
     imagenInicio.grid(row=0,column=0)
-    botonJuegoNuevo= tk.Button(ventanaInicio, text ="Juego Nuevo", command = lambda: crearPaginaPreJuego())
-    botonJuegoNuevo.grid(column=0,row=1, padx=15, sticky=EW)
+
+    frameBotones = Frame(ventanaInicio)
+    frameBotones.grid(column=0, row=1, sticky=NSEW)
+    frameBotones.columnconfigure(0, weight=1)
+    frameBotones.rowconfigure((0,1,2),weight=1, uniform="frameBotones")
+    botonJuegoNuevo= tk.Button(frameBotones, text ="Juego Nuevo", font="MS-Sans-Serif 12" ,command = lambda: crearPaginaPreJuego(), width=230, height=25, background="#4F67E0", foreground="white")
+    botonJuegoNuevo.grid(column=0,row=0, padx = 20,sticky=EW, pady=13)
 
 
-    botonEstadisticas= tk.Button(ventanaInicio, text ="Estadisticas", command = lambda: crearPaginaEstadisticas("ventanaInicio"))
-    botonEstadisticas.grid(column=0,row=2, padx=15, sticky=EW)
+    botonEstadisticas= tk.Button(frameBotones, text ="Estadisticas", font="MS-Sans-Serif 12" ,command = lambda: crearPaginaEstadisticas("ventanaInicio"), width=230, height=25, background="#4F67E0", foreground="white")
+    botonEstadisticas.grid(column=0,row=1, padx=20, sticky=EW, pady=13)
 
-    botonRepeticiones= tk.Button(ventanaInicio, text ="Repeticiones", command = lambda: crearPaginaEstadisticas("ventanaInicio"))
-    botonRepeticiones.grid(column=0,row=3, padx=15, sticky=EW)
+    botonRepeticiones= tk.Button(frameBotones, text ="Repeticiones", font="MS-Sans-Serif 12" ,command = lambda: crearPaginaEstadisticas("ventanaInicio"), width=230, height=25, background="#4F67E0", foreground="white")
+    botonRepeticiones.grid(column=0,row=2, padx=20, sticky=EW, pady=13)
    
     
 
@@ -120,6 +125,7 @@ def crearPaginaTablero():
     cambiarTama(1280,720)
     ventanaTablero  = crearFrame()
     frames['ventanaTablero'] = ventanaTablero
+    ventanaTablero["bg"] = "white"
     ventanaTablero.grid(sticky=NSEW)
     ventanaTablero.columnconfigure((0,1,2),weight=1, uniform="elemTab")
 
@@ -154,9 +160,55 @@ def crearPaginaTablero():
 
 
 
+    frameTablero = Frame(ventanaTablero)
+    frameTablero.grid(row=1,column = 0, columnspan=3, sticky=NSEW)
+    frameTablero.rowconfigure(0, weight=1)
+    frameTablero.columnconfigure((0,2), weight=1, uniform="col")
+    tablero = crearTablero(frameTablero,laberinto)
+    tablero.grid(row=0,column = 1)
 
-    tablero = crearTablero(ventanaTablero,laberinto)
-    tablero.grid(row=1,column = 0, columnspan=3)
+
+    frameCol0 = Frame(frameTablero, bg="red")
+    frameCol0.grid(row=0, column=0, sticky=NSEW)
+    frameCol0.columnconfigure((0), weight=1, uniform="col1")
+    frameCol0.rowconfigure((0,1,2,3,4), weight=1, uniform="row1")
+    
+
+    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=0, column=0,sticky=E)
+    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=0, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+
+    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=1, column=0,sticky=E)
+    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=1, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+    
+    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=2, column=0,sticky=E)
+    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=2, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+
+    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=3, column=0,sticky=E)
+    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=3, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+
+    tk.Label(frameCol0, text="Permite movimiento hacia arriba").grid(row=4, column=0,sticky=E)
+    tk.Label(frameCol0, relief='sunken', borderwidth=2).grid(row=4, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+   
+    frameCol2 = Frame(frameTablero, bg="blue")
+    frameCol2.grid(row=0, column=2, sticky=NSEW)
+    frameCol2.columnconfigure((1), weight=1, uniform="col1")
+    frameCol2.rowconfigure((0,1,2,3,4), weight=1, uniform="row1")
+
+    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=0, column=1,sticky=W)
+    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=0, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
+    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=1, column=1,sticky=W)
+    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=1, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+    
+    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=2, column=1,sticky=W)
+    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=2, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
+    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=3, column=1,sticky=W)
+    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=3, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
+    tk.Label(frameCol2, text="Permite movimiento hacia arriba").grid(row=4, column=1,sticky=W)
+    tk.Label(frameCol2, relief='sunken', borderwidth=2).grid(row=4, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
     if not tablero:
         raise_frame(frames["ventanaPreJuego"],400,500)
 
@@ -171,28 +223,31 @@ def crearPaginaPreJuego():
     cambiarTama(270,400)
     ventanaPreJuego  = crearFrame()
     frames['ventanaPreJuego'] = ventanaPreJuego
+    ventanaPreJuego["bg"] = "white"
+    #ventanaPreJuego.rowconfigure((1,2,3,4,5,6), weight=1, uniform="ventanaPreJuegofila")
 
-    tk.Label(ventanaPreJuego, text="Seleccionar laberinto").grid(row=0, column=0)
-    tk.Label(ventanaPreJuego,text="Nickname: ").grid(row=1, column=0)
+    tk.Label(ventanaPreJuego, text="Seleccionar laberinto", font="ms-sans-serif 12 bold").grid(row=0, column=0,columnspan=2, sticky="nw",padx=(20,0), pady=(32,0))
+    tk.Label(ventanaPreJuego,text="Nickname: ").grid(row=1, column=0, sticky="w",padx=(20,0), pady=(35,0))
 
-    nickname = tk.Entry(ventanaPreJuego)
-    nickname.grid(row=2, column=0, columnspan=2, sticky=NSEW)
+    nickname = tk.Entry(ventanaPreJuego, justify=LEFT, bg="#f1f1f1")
+    nickname.grid(row=2, column=0, columnspan=2, sticky="we", padx=20, ipady=6)
 
-    tk.Label(ventanaPreJuego,text="Laberinto: ").grid(row=3, column=0)
+    tk.Label(ventanaPreJuego,text="Laberinto: ").grid(row=3, column=0, sticky="w", padx=20, pady=(30,0))
 
     
     #laberintoSeleccionado = tk.StringVar(frames["ventanaPreJuego"],value=rutaArchivoLaberinto)
     laberintoSeleccionado = tk.StringVar(frames["ventanaPreJuego"],value="laberinto.txt")
-    tk.Label(ventanaPreJuego,textvariable=laberintoSeleccionado, borderwidth=1, relief="sunken").grid(row=4, column=0, columnspan=2, sticky=NSEW)
 
-    botonArchivo = tk.Button(ventanaPreJuego, text ="Archivo", command = lambda: solicitarArchivo())
-    botonArchivo.grid(row=5, column=0, columnspan=2, sticky=NSEW)
+    tk.Label(ventanaPreJuego,textvariable=laberintoSeleccionado, borderwidth=1, relief="sunken", bg="#f1f1f1", anchor="w").grid(row=4, column=0, columnspan=2, sticky="we", padx=20, ipady=6)
 
-    botonIniciarJuego = tk.Button(ventanaPreJuego, text ="Iniciar", command = lambda: iniciarJuego())
-    botonIniciarJuego.grid(row=6, column=1, sticky=NSEW)
+    botonArchivo = tk.Button(ventanaPreJuego, text ="Seleccionar laberinto", command = lambda: solicitarArchivo(), bg="#4F67E0", foreground="white")
+    botonArchivo.grid(row=5, column=0, columnspan=2, sticky="we", padx=20, pady=(20,0), ipady=6)
 
-    botonVolver = tk.Button(ventanaPreJuego, text ="Volver", command = lambda: raise_frame(frames["ventanaInicio"], 400,500))
-    botonVolver.grid(row=6, column=0, sticky=NSEW)
+    botonIniciarJuego = tk.Button(ventanaPreJuego, text ="Iniciar", command = lambda: iniciarJuego(), bg="#4F67E0", foreground="white")
+    botonIniciarJuego.grid(row=6, column=1, sticky="we" ,padx=(5,20),pady=(50,0) , ipady=6)
+
+    botonVolver = tk.Button(ventanaPreJuego, text ="Volver", command = lambda: raise_frame(frames["ventanaInicio"], 270,400), bg="#4F67E0", foreground="white")
+    botonVolver.grid(row=6, column=0, sticky="we",padx=(20,5),pady=(50,0)  , ipady=6)
 
     ventanaPreJuego.grid_columnconfigure((0,1),weight=1, uniform="colPre")
 
@@ -245,8 +300,8 @@ def crearPaginaEstadisticas(ventanaAnterior):
     ef1 = tk.Frame(ventanaEstadisticas)
     ef1.grid(column=0, row=0,sticky=NSEW)
     if(ventanaAnterior=="ventanaInicio"):
-        x = 400
-        y = 500
+        x = 270
+        y = 400
     elif(ventanaAnterior == "ventanaFinal"):
         x =1280
         y=720
