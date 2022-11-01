@@ -77,7 +77,7 @@ colores = {"x":"#211438",
             "ad" : "#E28B48",
             "at" : "#F4D03F",
             "inter" : "#873600",
-            "normal" : "#16A085",
+            "normal" : "#71A85E",
             }
 frames= {}
 movRepeticion = []
@@ -95,7 +95,7 @@ def crearPaginaInicio():
     global ventana,img
     cambiarTama(270,400)
     ventanaInicio  = crearFrame()
-    ventanaInicio.tk_setPalette(background = "white")
+    ventanaInicio.tk_setPalette(background = "#1E1E1E")
     ventanaInicio
     frames['ventanaInicio'] = ventanaInicio
     ventanaInicio.grid_columnconfigure(0, weight=1)
@@ -334,23 +334,18 @@ def crearPaginaEstadisticas(ventanaAnterior):
     ef2.columnconfigure(0, weight=1)
     ef2.columnconfigure((0,1,2,3,4,5), weight=1, uniform="ef2Uni2")
 
-
-
-    
-
     listaEstadisticas = getEstadisticas()
-
 
     fil = 1 
     for estadistica in listaEstadisticas:
-        tk.Label(ef2, text=estadistica[1], font="ms-sans-serif 10", bg="#f3f3f3"  ).grid(column=0, row=fil, sticky="we",ipadx = 10,  ipady=5)
-        tk.Label(ef2, text=estadistica[2], font="ms-sans-serif 10", bg="#f3f3f3" ).grid(column=1, row=fil, sticky="we",ipadx = 10,  ipady=5)
-        tk.Label(ef2, text=estadistica[3],font="ms-sans-serif 10", bg="#f3f3f3"   ).grid(column=2, row=fil, sticky="we",ipadx = 10,  ipady=5)
-        tk.Label(ef2, text=estadistica[4],font="ms-sans-serif 10" , bg="#f3f3f3"  ).grid(column=3, row=fil, sticky="we",ipadx = 10,  ipady=5)
-        tk.Label(ef2, text=estadistica[5],font="ms-sans-serif 10", bg="#f3f3f3"   ).grid(column=4, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[1], font="ms-sans-serif 10", bg="#323232"  ).grid(column=0, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[2], font="ms-sans-serif 10", bg="#323232" ).grid(column=1, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[3],font="ms-sans-serif 10", bg="#323232"   ).grid(column=2, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[4],font="ms-sans-serif 10" , bg="#323232"  ).grid(column=3, row=fil, sticky="we",ipadx = 10,  ipady=5)
+        tk.Label(ef2, text=estadistica[5],font="ms-sans-serif 10", bg="#323232"   ).grid(column=4, row=fil, sticky="we",ipadx = 10,  ipady=5)
         if os.path.isfile("repeticiones/"+str(estadistica[0])+".txt") and os.path.isfile("laberintos/"+str(estadistica[0])+".txt"):
 
-            tk.Button(ef2, text ="Ver repeticiónes",command = lambda x= estadistica[0]: getPaginaRepeticion(x) , bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we",ipadx=25, padx=5, pady=8)
+            tk.Button(ef2, text ="Ver repetición",command = lambda x= estadistica: getPaginaRepeticion(x) , bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we",ipadx=25, padx=5, pady=8)
         else:
             tk.Button(ef2, text ="Repetición no disponible",state=DISABLED, bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we", ipadx=25, padx=5, pady=8)
         fil+=1
@@ -381,31 +376,102 @@ def getRepeticion(id):
     return listaRepeticion
 
 def getPaginaRepeticion(id):
-    global ventana, laberinto
+    global ventana, laberinto, nickname
     ventanaRepeticion = crearFrame()
+    ventanaRepeticion.grid(sticky=NSEW)
+    ventanaRepeticion.columnconfigure((0,1,2),weight=1, uniform="ventanaRepeticion")
+    ventanaRepeticion.rowconfigure((0,1,3), weight=1)
+    ventanaRepeticion.rowconfigure(2, weight=1)
     frames['ventanaRepeticion'] = ventanaRepeticion
-    laberintoProlog = prolog.query("getLaberinto('%s',X)." % ("laberintos/"+str(id)+".txt"))
+    laberintoProlog = prolog.query("getLaberinto('%s',X)." % ("laberintos/"+str(id[0])+".txt"))
     laberintoRepeticion = transformarLaberinto(laberintoProlog)
-    tablero = crearTablero(ventanaRepeticion, laberintoRepeticion)
+
+    tk.Label(ventanaRepeticion,text="Repetición", bg="#4F67E0", fg="white", font="ms-sans-serif 18").grid(column=1,row=0,sticky=NSEW)
+    tk.Label(ventanaRepeticion,text="Nickname: "+id[1] , bg="#4F67E0", fg="white", font="ms-sans-serif 12").grid(column=0,row=0,sticky=NSEW)
+    tk.Label(ventanaRepeticion,text="Finalizó por:"+id[5] , bg="#4F67E0", fg="white", font="ms-sans-serif 12").grid(column=2,row=0,sticky=NSEW)
+
+
+    tk.Label(ventanaRepeticion,text="Sugerencias utilizadas: "+id[3],bg="#4F67E0", fg="white", font="ms-sans-serif 12").grid(column=0,row=1,sticky=NSEW)
+    tk.Label(ventanaRepeticion,text=id[4],bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(column=1,row=1,sticky=NSEW)
+    tk.Label(ventanaRepeticion,text="Movimientos: "+id[2],bg="#4F67E0", fg="white", font="ms-sans-serif 12").grid(column=2,row=1,sticky=NSEW)
+
+
+    frameTablero = Frame(ventanaRepeticion)
+    frameTablero.grid(row=2,column = 0, columnspan=3, sticky=NSEW)
+    frameTablero.rowconfigure(0, weight=1)
+    frameTablero.columnconfigure((0,2), weight=1, uniform="col")
+    tablero = crearTablero(frameTablero,laberintoRepeticion)
+    
+
+
+    frameCol0 = Frame(frameTablero)
+    frameCol0.grid(row=0, column=0, sticky=NSEW)
+    frameCol0.columnconfigure((0), weight=1, uniform="col1")
+    frameCol0.rowconfigure((0,1,2,3,4), weight=1, uniform="row1")
+    
+
+    tk.Label(frameCol0, text="Permite movimiento hacia arriba", font="ms-sans-serif 10").grid(row=0, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["ar"]).grid(row=0, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+
+    tk.Label(frameCol0, text="Permite movimiento hacia abajo", font="ms-sans-serif 10").grid(row=1, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["ab"]).grid(row=1, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+    
+    tk.Label(frameCol0, text="Permite movimiento hacia atras", font="ms-sans-serif 10").grid(row=2, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["at"]).grid(row=2, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+
+    tk.Label(frameCol0, text="Permite movimiento hacia adelante", font="ms-sans-serif 10").grid(row=3, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["ad"]).grid(row=3, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+
+    tk.Label(frameCol0, text="Permite movimiento en las cuatro direcciones", font="ms-sans-serif 10").grid(row=4, column=0,sticky=E)
+    tk.Label(frameCol0, relief='raised', borderwidth=2, bg=colores["inter"]).grid(row=4, column=1,ipadx=13, ipady=5,padx=5, sticky=E)
+   
+    frameCol2 = Frame(frameTablero)
+    frameCol2.grid(row=0, column=2, sticky=NSEW)
+    frameCol2.columnconfigure((1), weight=1, uniform="col1")
+    frameCol2.rowconfigure((0,1,2,3,4), weight=1, uniform="row1")
+
+    tk.Label(frameCol2, text="Posición actual").grid(row=0, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2,bg=colores["O"]).grid(row=0, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
+    tk.Label(frameCol2, text="Muro").grid(row=1, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg=colores["x"]).grid(row=1, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+    
+    tk.Label(frameCol2, text="Inicio").grid(row=2, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg=colores["i"]).grid(row=2, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
+    tk.Label(frameCol2, text="Final").grid(row=3, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg=colores["f"]).grid(row=3, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
+    tk.Label(frameCol2, text="Sugerencia/Autosolución").grid(row=4, column=1,sticky=W)
+    tk.Label(frameCol2, relief='raised', borderwidth=2, bg = colores["sugerencia"]).grid(row=4, column=0,ipadx=13, ipady=5,padx=5, sticky=W)
+
+    tk.Button(ventanaRepeticion, text ="Volver", bg="#4F67E0", fg="white", font="ms-sans-serif 14", width=350, command=lambda: raise_frame(frames["ventanaEstadisticas"],1280,720)).grid(column=1, row=3)
+    #tablero = crearTablero(ventanaRepeticion, laberintoRepeticion)
     if not tablero:
         print("algo pasó")
 
     else:
-        tablero.grid(column=0,row=0)
-        repeticion = getRepeticion(id)
+        tablero.grid(row=0,column = 1, pady=15)
+        repeticion = getRepeticion(id[0])
         print(repeticion)
-        reproducirRepeticion(tablero,repeticion)
+        reproducirRepeticion(tablero,repeticion[:-1])
 
 
 def reproducirRepeticion(tablero, repeticion):
     global ventana
+    print(repeticion)
     if repeticion == []:
         print("no quedan pasos")
     else:
+        print("prueba: ")
         print(repeticion[0])
         reproducirRepeticionAux(tablero,repeticion[0])
         repeticion.pop(0)
-        ventana.after(1300, reproducirRepeticion, tablero, repeticion)
+        tempo = 1300
+        if repeticion != []:
+            if repeticion[0][0] == "auto":
+                tempo = 900
+            ventana.after(tempo, reproducirRepeticion, tablero, repeticion)
         #reproducirRepeticion(tablero,repeticion)
 
 def reproducirRepeticionAux(tab,punto):
@@ -418,15 +484,15 @@ def reproducirRepeticionAux(tab,punto):
         if pos == (int(punto[1]),int(punto[2])):
             #i.config(bg=colores[punto[0]])
             if punto[0] =="sugerencia":
-                parpadear(i,colores[punto[0]],"black",5)
+                parpadear(i,colores[punto[0]],"#71A85E",6)
             else:
-                i.config(bg= colores[punto[0]])
+                i.config(bg= colores[punto[0]], fg = colores[punto[0]])
             print ("Si")
 
 def parpadear(objeto, col1, col2, cant):
     global ventana
     if cant != 0:
-        objeto.config(bg= col2)
+        objeto.config(bg = col1, fg =col1)
         ventana.after(int(1300/cant),parpadear,objeto,col2,col1,cant-1)
 
 
