@@ -1,23 +1,23 @@
-#python3 -m pip install pillow
-
-from cgitb import text
 import os
 from tkinter import font
-from turtle import left
 from pyswip import Prolog
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import *
 from PIL import ImageTk, Image  
 from copy import deepcopy
-from tabulate import tabulate
-import time
 from datetime import datetime
 import uuid
 from scroll import ScrollableFrame
 
 
-
+"""
+getVentana
+E: Ninguna
+S: Una Ventana
+R: Los recursos solicitados deben existir
+O: Crear una ventana para el programa
+"""
 def getVentana():
     global ventana
     ventana = Tk()
@@ -32,6 +32,15 @@ def getVentana():
     ventana.resizable(width=False, height=False)
     return ventana
 
+
+
+"""
+cambiarTama(x,y)
+E: x->Ancho de la ventana, y-> alto de la ventana
+S: Cambio del tamaño de ventana
+R: Los parametros deben ser numericos
+O: Cambiar el tamaño de la ventana
+"""
 def cambiarTama(x, y):
     global ventana
     anchoPantalla = ventana.winfo_screenwidth()
@@ -79,11 +88,26 @@ numeroMovimientos = 0
 numeroSugerencias = 10
 tiempoInicio = datetime.now()
 
-##################################################laberintoPrueba = [['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'], ['x', 'ar', 'x', 'x', 'ad', 'ad', 'ad', 'inter', 'ad', 'inter', 'x'], ['i', 'inter', 'ad', 'ad', 'inter', 'x', 'x', 'ab', 'x', 'ab', 'x'], ['x', 'ab', 'x', 'x', 'x', 'inter', 'at', 'inter', 'x', 'ab', 'x'], ['x', 'ab', 'x', 'x', 'x', 'ab', 'x', 'ab', 'x', 'x', 'x'], ['x', 'ab', 'x', 'x', 'inter', 'inter', 'x', 'ab', 'x', 'inter', 'f'], ['x', 'ab', 'x', 'x', 'ab', 'x', 'x', 'inter', 'inter', 'inter', 'x'], ['x', 'ab', 'x', 'x', 'ab', 'x', 'x', 'x', 'ar', 'x', 'x'], ['x', 'ab', 'x', 'at', 'inter', 'inter', 'ad', 'ad', 'inter', 'at', 'x'], ['x', 'ab', 'x', 'ar', 'x', 'ab', 'x', 'x', 'ab', 'ar', 'x'], ['x', 'inter', 'ad', 'inter', 'x', 'inter', 'ad', 'x', 'ab', 'inter', 'x'], ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x']]
+
+"""
+raise_frame(frame, x, y)
+E: frame->un frame, (x,y) -> nuevas dimensiones de la ventana
+S: Cambio grafico en la ventana
+R: El frame debe existir y las dimensiones deben ser numericas
+O: Cambiar la ventana actual
+"""
 def raise_frame(frame,x,y):
     cambiarTama(x,y)
     frame.tkraise()
 
+
+"""
+crearPaginaInicio
+E: ninguna
+S: Pagina inicio
+R: Ninguna
+O: Crear la pagina de inicio
+"""
 def crearPaginaInicio():
     global ventana,img
     cambiarTama(270,400)
@@ -109,7 +133,14 @@ def crearPaginaInicio():
     botonEstadisticas= tk.Button(frameBotones, text ="Estadisticas", font="MS-Sans-Serif 11" ,command = lambda: crearPaginaEstadisticas("ventanaInicio"), width=220, height=10, background="#4F67E0", foreground="white")
     botonEstadisticas.grid(column=0,row=1, padx=20, sticky=EW, pady=(25,50))
 
-    
+
+"""
+crearPaginaPreJuego
+E: Ninguna
+S: Pagina pre juego
+R: Se deben seleccionar nickname y laberinto 
+O: Solicitar los datos para la creación del laberinto
+"""  
 def crearPaginaPreJuego():
     global ventana, laberintoSeleccionado, nickname
     cambiarTama(270,400)
@@ -139,6 +170,13 @@ def crearPaginaPreJuego():
     ventanaPreJuego.grid_columnconfigure((0,1),weight=1, uniform="colPre")
 
 
+"""
+crearPaginaTablero
+E: Ninguna
+S: Pagina tablero
+R: Se debe haber seleccionado un nombre y laberinto previamente
+O: Brindar una interfaz para jugar
+"""
 def crearPaginaTablero():
     global ventana, contadorMov, contadorSug, gano, laberinto, tablero
     cambiarTama(1280,720)
@@ -168,7 +206,7 @@ def crearPaginaTablero():
     framebot.grid(row=3, column=0, columnspan=3,sticky=NSEW)
     framebot.grid_columnconfigure((0,1), weight=1, uniform="elemTab2")
     
-    botonSol= tk.Button(framebot, text ="Autosolucionar", command = lambda:autoSolucionar(botonSol), bg="#4F67E0", fg="white")
+    botonSol= tk.Button(framebot, text ="Autosolucionar", command = lambda:autoSolucionar(), bg="#4F67E0", fg="white")
     botonSol.grid(row = 0, column=0, sticky=NSEW, padx=20, pady=(0,10), ipady=5)
     
     botonAbandonar= tk.Button(framebot, text ="Abandonar partida", command = lambda:abandonarPartida(), bg="#4F67E0", fg="white")
@@ -227,6 +265,13 @@ def crearPaginaTablero():
         gano = "activo"
 
 
+"""
+crearPaginaFinal
+E: Ninguna
+S: Pagina final
+R: El estado de juego no puede ser "activo"
+O: Mostrar la información de la partida al momento de terminar
+"""
 def crearPaginaFinal():
     global ventana, tablero, movRepeticion,laberinto
     cambiarTama(1280,720)
@@ -243,7 +288,6 @@ def crearPaginaFinal():
 
 
     tk.Label(ventanaFinal,text="Sugerencias utilizadas: "+str(10-numeroSugerencias),bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(column=0,row=1,sticky=NSEW)
-    #tk.Label(ventanaFinal,text=10-numeroSugerencias).grid(column=2,row=3)
     tk.Label(ventanaFinal,textvariable=cronometro,bg="#4F67E0", fg="white", font="ms-sans-serif 16").grid(column=1,row=1,sticky=NSEW)
     tk.Label(ventanaFinal,text="Movimientos: "+str(numeroMovimientos),bg="#4F67E0", fg="white", font="ms-sans-serif 14").grid(column=2,row=1,sticky=NSEW)
 
@@ -263,6 +307,14 @@ def crearPaginaFinal():
     botonGuardarRepeticion = tk.Button(ventanaFinal, text ="Guardar repetición", bg="#4F67E0", foreground="white",font="ms-sans-serif 12",  command = lambda: guardarRepeticion(idEstadistica))
     botonGuardarRepeticion.grid(column=1, row=4, padx=50, ipady=5,pady=(0,15), sticky="we")
 
+
+"""
+crearPaginaEstadisticas
+E: ventanaAnterior-> nombre de la ventana anterior para poder volver a ella
+S: Pagina de estadisticas
+R: Ninguna
+O: Mostrar las estadisticas de las partidas
+"""
 def crearPaginaEstadisticas(ventanaAnterior):
     global ventana
     cambiarTama(1280,720)
@@ -314,6 +366,13 @@ def crearPaginaEstadisticas(ventanaAnterior):
         fil+=1
 
 
+"""
+getEstadisticas
+E: Ninguna
+S: lista de estadisticas almacenadas
+R: Debe existir el archivo de estadisticas
+O: Obtener un registro de todas las estadisticas almacenadas
+"""
 def getEstadisticas():
     archivoEstadisticas = open("estadisticas.txt","r")
     estadisticas = archivoEstadisticas.read()
@@ -326,6 +385,13 @@ def getEstadisticas():
     return reversed(listaEstadisticas)
 
 
+"""
+getRepeticion
+E: id-> id del archivo en donde se encuentra la repetición
+S: lista de movimientos de la partida guardada
+R: el id debe existir
+O: Obtener la lista de movimientos de una repetición
+"""
 def getRepeticion(id):
     archivoRepeticion = open("repeticiones/"+str(id)+".txt", "r")
     strRepeticion = archivoRepeticion.read()
@@ -337,6 +403,14 @@ def getRepeticion(id):
     listaRepeticion.pop(-1)
     return listaRepeticion
 
+
+"""
+getPaginaRepeticion
+E: id-> id de la repeticion
+S: Pagina repeticion
+R: el id debe existir
+O: Crear una pagina para reproducir la repetición
+"""
 def getPaginaRepeticion(id):
     global ventana, laberinto, nickname
     ventanaRepeticion = crearFrame()
@@ -412,6 +486,13 @@ def getPaginaRepeticion(id):
         reproducirRepeticion(tablero,repeticion[:-1])
 
 
+"""
+reproducirRepeticion(tablero, repeticion)
+E: tablero->matriz de fichas , repetición->lista de movimientos
+S: reproduccion de la repetición
+R: deben existir tablero y archivo con el id indicado previamente
+O: representar graficamente la repetición de la partida
+"""
 def reproducirRepeticion(tablero, repeticion):
     global ventana
     if repeticion != []:
@@ -423,6 +504,14 @@ def reproducirRepeticion(tablero, repeticion):
                 tempo = 900
             ventana.after(tempo, reproducirRepeticion, tablero, repeticion)
 
+
+"""
+reproducirRepeticionAux(tab, punto)
+E: tab -> matriz de fichas, punto-> indice de la ficha a modificar
+S: cambio grafico en una ficha especifica
+R: el punto debe pertenecer al tablero 
+O: Cambiar el color de la ficha segun el tipo de movimiento 
+"""
 def reproducirRepeticionAux(tab,punto):
     global colores,ventana
     child = tab.winfo_children()
@@ -435,18 +524,43 @@ def reproducirRepeticionAux(tab,punto):
             else:
                 i.config(bg= colores[punto[0]], fg = colores[punto[0]])
 
+
+"""
+parpadear
+E: objeto -> objeto a resaltar, (col1, col2) ->colores , cant ->cantidad de veces a repetir el cambio
+S: Cambio grafico de la ficha
+R: El objeto debe existir y tener una propiedad ["bg"], los colores deben ser validos y cant >0
+O: Cambia los colores de un objeto para que este parpadee graficamente
+"""
 def parpadear(objeto, col1, col2, cant):
     global ventana
     if cant != 0:
         objeto.config(bg = col1, fg =col1)
         ventana.after(int(1300/cant),parpadear,objeto,col2,col1,cant-1)
 
+
+"""
+reiniciar
+E: ninguna
+S: reinicio del juego
+R: ninguna
+O: Reinicia el laberinto y guarda la partida como abandono
+"""
 def reiniciar():
     global movRepeticion
     guardarEstadisticas(nickname.get(),numeroMovimientos, numeroSugerencias,cronometro.get(),"abandono")
     movRepeticion += [["reinicio",-1,-1]]
     iniciarJuego()
 
+
+"""
+guardarEstadisticas
+E: pNickname-> nickname del usuario , pCantmov->cantidad de movimientos realizados, 
+    pCantSug->cantidad de sugerencias solicitadas, pTiempo -> tiempo que tardo en completar el laberinto, pTipoFin ->de que manera termino el laberinto
+S: id de la nueva entrada
+R: nicname, tiempo y tipofin deben ser cadenas de text
+O: Guardar la partida terminada en estadisticas
+"""
 def guardarEstadisticas(pNickname, pCantmov, pCantSug,pTiempo, pTipoFin):
     estadisticas = open("estadisticas.txt","a")
     id = uuid.uuid1().hex
@@ -456,6 +570,13 @@ def guardarEstadisticas(pNickname, pCantmov, pCantSug,pTiempo, pTipoFin):
     return id
 
 
+"""
+guardarRepeticion
+E: id -> id de la partida recien registrada en estadisticas
+S: nuevo archivo de repetición
+R: ninguna
+O: guardar la repetición y el laberinto jugado en sus respectivas carpetas
+"""
 def guardarRepeticion(id):
     global movRepeticion,rutaArchivoLaberinto, frames
     archivoLab = open(rutaArchivoLaberinto,"r")
@@ -473,18 +594,40 @@ def guardarRepeticion(id):
     crearPaginaEstadisticas("ventanaFinal")
 
 
+"""
+crearFrame
+E: ninguna
+S: Nuevo frame
+R: Debe existir ventana
+O: Crear un nuevo frame
+"""
 def crearFrame():
     global ventana
     frame = tk.Frame(ventana, height=720)
     frame.grid(column=0, row=0, sticky=NSEW)
     return frame
 
+
+"""
+solicitarArchivo
+E: ningua
+S: ruta del archivo seleccionado
+R: ninguna
+O: Seleccionar el laberinto que se desea jugar
+"""
 def solicitarArchivo():
     global rutaArchivoLaberinto, laberintoSeleccionado
     rutaArchivoLaberinto = filedialog.askopenfilename()
     laberintoSeleccionado.set(rutaArchivoLaberinto)
 
 
+"""
+reestablecerValores
+E: ninguna
+S: valores en su estado inicial
+R: ninguna
+O: Reestablece todos los valores a su estado inicial
+"""
 def reestablecerValores ():
     global posX,posY, inicioX, inicioY, finX, finY, gano,numeroMovimientos, numeroSugerencias, tiempoInicio,cronometro, movRepeticion
     posX = 0
@@ -500,6 +643,14 @@ def reestablecerValores ():
     cronometro.set(getTiempo())
     movRepeticion = []
 
+
+"""
+iniciarJuego
+E: ninguna
+S: Inicio del juego 
+R: se debe haber indicado nickname y laberinto
+O: Iniciar la partida
+"""
 def iniciarJuego():
     global laberintoSeleccionado, laberinto
     reestablecerValores()  
@@ -510,6 +661,14 @@ def iniciarJuego():
             obtenerPosicionInicial()
             crearPaginaTablero()
 
+
+"""
+transformarLaberinto
+E: laberintoProlog -> matriz del laberinto en formato de prolog
+S: matriz del laberinto formato python
+R: ninguna
+O: Parsear la entrada recibida por prolog
+"""
 def transformarLaberinto(laberintoProlog):
     laberinto = []
     for i in laberintoProlog: 
@@ -521,6 +680,14 @@ def transformarLaberinto(laberintoProlog):
             laberinto += [fila]
     return laberinto
 
+
+"""
+obternerPosicionInicial
+E: ninguna
+S: posiciones iniciales y finales del laberinto
+R: debe existir un laberinto cargado
+O: Obtener las posiciones del laberinto
+"""
 def obtenerPosicionInicial():
     global laberinto, posX, posY, finX, finY,fichaAnterior,numeroMovimientos,  movRepeticion, inicioX, inicioY
     numeroMovimientos = 0
@@ -543,6 +710,14 @@ def obtenerPosicionInicial():
         y=0
     fichaAnterior = "i"
 
+
+"""
+abandonarPartida
+E: ninguna
+S: termina la partida
+R: El juego debe haber comenzado
+O: Abandonar una partida
+"""
 def abandonarPartida():
     global gano, movRepeticion
     gano = "abandono"
@@ -552,8 +727,16 @@ def abandonarPartida():
 
 solucionLaberinto= []
 
-#este algoritmo fue basado en el siguiente articulo https://programmerclick.com/article/67791960095/ 
-#tomando en cuenta las diferencias entre los objetivos 
+
+"""
+solucionarLaberinto
+E: laberintoSol -> laberinto a solucionar, puntoInicio -> punto de inicio del laberinto, puntoFinal -> punto final del laberinto
+S: lista con los puntos solución del laberinto
+R: puntoInicio y puntoFinal deben ser tuplas (x,y), laberintoSol una copia del laberinto original
+O: Obtener solución del laberinto
+este algoritmo fue basado en el siguiente articulo https://programmerclick.com/article/67791960095/ 
+tomando en cuenta las diferencias entre los objetivos
+""" 
 def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
     actual = laberintoSol[puntoInicio[0]][puntoInicio[1]] #obtener actual
     if actual == "O" or actual =="◯":
@@ -578,6 +761,13 @@ def solucionarLaberinto(laberintoSol, puntoInicio, puntoFinal):
 
 ######################################################################################################################################################
 
+"""
+solicitarSugerencia
+E: boton -> botono de solicitar sugerencia
+S: cambio grafico en el punto sugerido y el boton de solicitar
+R: Debe existir una solución
+O: Obtener una sugerencia para el movimiento
+"""
 def solicitarSugerencia(boton):
     global solucionLaberinto,tablero,numeroSugerencias, movRepeticion
     if numeroSugerencias>0:
@@ -602,11 +792,25 @@ def solicitarSugerencia(boton):
         boton["bg"]="red"
         boton["text"] = "No quedan sugerencias"
 
+
+"""
+mostrarSugerencia
+E: ficha -> ficha a sugerir
+S: cambio grafico en ficha
+R: ninguna
+O: mostrar graficamente la sugerencia
+"""
 def mostrarSugerencia(ficha):
    ficha.config(bg=colores[ficha["text"]],fg=colores[ficha["text"]])
     
 
-
+"""
+crearTablero
+E: ventanaTablero -> ventana en donde se creará el tablero, laberintoTablero-> laberinto en el que se basará el tablero
+S: Representación grafica del laberinto en la ventana indicada
+R: debe existir el laberinto y ventana indicados
+O: Crear un tablero 
+"""
 def crearTablero(ventanaTablero,laberintoTablero):
     global ventana, laberinto, colores, tablero
     x = 550
@@ -633,7 +837,14 @@ def crearTablero(ventanaTablero,laberintoTablero):
     return tablero
     
 
-def autoSolucionar(boton):
+"""
+autoSolucionar
+E:boton -> boton de autosolución
+S: Pagina final
+R: el laberinto debe haber iniciado
+O: solicitar autosolución del laberinto
+"""
+def autoSolucionar():
     global solucionLaberinto, gano, movRepeticion, posX, posY, inicioX, inicioY
     obtenerSolucion()
     if solucionLaberinto !=[]:
@@ -644,9 +855,16 @@ def autoSolucionar(boton):
     else:
         posX = inicioX
         posY = inicioY
-        autoSolucionar(boton)
+        autoSolucionar()
 
 
+"""
+mostrarSolucion
+E: tab ->tablero 
+S: representasión grafica de la solución
+R: debe existir una solución
+O: representar graficamente la solución del laberinto
+"""
 def mostrarSolucion(tab):
     child = tab.winfo_children()
     for i in child:
@@ -657,15 +875,27 @@ def mostrarSolucion(tab):
             i.config(bg="purple", fg="white", text="◯")
     
 
+"""
+obtenerSolucion
+E: ninguna
+S: solicitud de solución del laberinto
+R: ninguna
+O: Solicitar la solucióndel laberinto
+"""
 def obtenerSolucion():
     global  posX, posY, finX, finY, solucionLaberinto
     solucionLaberinto = []
     laberintoTemp = deepcopy(laberinto)
     solucionarLaberinto(laberintoTemp,(posX,posY),(finX, finY))
-    #verLaberinto()##################
-    #########raise_frame(frames["ventanaInicio"])
     solucionLaberinto.reverse()
     
+"""
+verificar
+E: boton -> botono de verificar posición
+S: cambio grafico que indica si es valido o no 
+R: ninguna
+O: Indicar graficamente si la posición actual forma parte de la solución
+"""   
 def verificar(boton):
     global ventana, solucionLaberinto, gano
     obtenerSolucion()
@@ -677,11 +907,26 @@ def verificar(boton):
         boton["bg"] = "red"
         boton["text"] = "✕"
         ventana.after(5000, verificarAux,boton)
+
+
+"""
+verificarAux
+E: boton -> boton de verificar
+S: reestablece la apariencia del boton
+R: ninguna
+O: reestablecer la apariencia del boton
+"""
 def verificarAux(boton):
     boton["bg"] = "#4F67E0"
     boton["text"] = "Verificar posición"
 
-#mover ficha en interfaz
+"""
+moverFichaAux
+E: fichaActual  -> posición actual en tablero , fichaSiguiente->destino en tablero 
+S: cambio grafico del tablero
+R: deben existir las posiciónes indicadas
+O: Mover la ficha de manera grafica
+"""
 def moverFichaAux(fichaActual, fichaSiguiente):
     global tablero, fichaAnterior
     child = tablero.winfo_children()
@@ -697,6 +942,14 @@ def moverFichaAux(fichaActual, fichaSiguiente):
             i["fg"] ="white"
             i["text"] ="◯"
 
+
+"""
+moverFicha
+E: i-> indice representativo de la dirección
+S: cambio de la posición de la ficha
+R: el movimiento debe ser valido 
+O: Mover la ficha en el tablero 
+"""
 def moverFicha(i):
     global posX, posY,fichaAnterior, numeroMovimientos, tiempoInicio, laberinto,gano,movRepeticion
     if gano != "activo":
@@ -728,21 +981,57 @@ def moverFicha(i):
         refrescarTiempo()
 
 
+"""
+moverIzquierda
+E: evento de presionar la tecla direccional
+S: Solicitud de mover la ficha
+R: ninguna
+O: Detectar la entrada de la tecla
+"""
 def moverIzquierda(event):
     moverFicha(2)
     
 
+"""
+moverDerecha
+E: evento de presionar la tecla direccional
+S: Solicitud de mover la ficha
+R: ninguna
+O: Detectar la entrada de la tecla
+"""
 def moverDerecha(event):
     moverFicha(3)
     
 
+"""
+moverArriba
+E: evento de presionar la tecla direccional
+S: Solicitud de mover la ficha
+R: ninguna
+O: Detectar la entrada de la tecla
+"""
 def moverArriba(event):
     moverFicha(0)
-    
 
+
+"""
+moverAbajo
+E: evento de presionar la tecla direccional
+S: Solicitud de mover la ficha
+R: ninguna
+O: Detectar la entrada de la tecla
+"""
 def moverAbajo(event):
     moverFicha(1)
-    
+
+
+"""
+formatearTiempo
+E: segundos ->cantidad de segundos transcurridos
+S: Formato de tiempo en horas:minutos:segundos
+R: segundos debe ser un numero entero
+O: Darle formato al tiempo del cronometro
+"""    
 def formatearTiempo(segundos):
     horas = int(segundos / 60 / 60)
     segundos -= horas*60*60
@@ -750,17 +1039,32 @@ def formatearTiempo(segundos):
     segundos -= minutos*60
     return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
 
+
+"""
+getTiempo
+E: hora del sistema
+S: tiempo transcurrido
+R: ninguna
+O: Obtener el tiempo transcurrido
+"""
 def getTiempo():
     segundos_transcurridos= (datetime.now() - tiempoInicio).total_seconds()
     return formatearTiempo(int(segundos_transcurridos))
 
-
+"""
+refrescarTiempo
+E: Ninguna
+S: Actualiza el tiempo una vez realizado el primer movimiento 
+R: El juego debe estar en espera
+O: Arrancar el cronometro
+"""
 def refrescarTiempo():
     global ventana
     if numeroMovimientos >=1 and gano == "activo":
         cronometro.set(getTiempo())
         ventana.after(500, refrescarTiempo)
 
+#la funcionalidad del cronometro se basa en esta implementación https://parzibyte.me/blog/2021/08/23/cronometro-tkinter-python/
 cronometro = tk.StringVar(ventana, value=getTiempo())
 
 crearPaginaInicio()
