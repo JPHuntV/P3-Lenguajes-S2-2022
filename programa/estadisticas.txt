@@ -1,0 +1,5 @@
+807ba7705a6b11eda803f02f74b36e80,Hunt,27,3,00:00:41,exitosa
+a8c7ee505a6b11edb986f02f74b36e80,Pia,7,1,00:00:06,auto
+fd8cdf2c5a6b11edbf1cf02f74b36e80,Jugador 1,27,1,00:00:09,exitosa
+801e4b295a6d11edb15df02f74b36e80,Carlos,7,1,00:00:07,abandono
+c63d829e5a6e11ed87dff02f74b36e80,Duki,1,0,00:00:01,abandono

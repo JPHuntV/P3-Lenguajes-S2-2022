@@ -360,7 +360,7 @@ def crearPaginaEstadisticas(ventanaAnterior):
         tk.Label(ef2, text=estadistica[5],font="ms-sans-serif 10", bg="#323232"   ).grid(column=4, row=fil, sticky="we",ipadx = 10,  ipady=5)
         if os.path.isfile("repeticiones/"+str(estadistica[0])+".txt") and os.path.isfile("laberintos/"+str(estadistica[0])+".txt"):
 
-            tk.Button(ef2, text =" Ver repetición ",command = lambda x= estadistica: getPaginaRepeticion(x) , bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we",ipadx=25, padx=5, pady=4)
+            tk.Button(ef2, text ="       Ver repetición        ",command = lambda x= estadistica: getPaginaRepeticion(x) , bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we",ipadx=25, padx=5, pady=4)
         else:
             tk.Button(ef2, text ="Repetición no disponible",state=DISABLED, bg="#4F67E0", fg="white", font="ms-sans-serif 10").grid(column=5, row=fil, sticky="we", ipadx=25, padx=5, pady=4)
         fil+=1

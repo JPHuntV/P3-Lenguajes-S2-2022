@@ -1,3 +1,4 @@
+/*movimientos considerados como validos*/
 movimientoValido(ad, d).
 movimientoValido(ab, s).
 movimientoValido(at, a).
@@ -12,7 +13,9 @@ movimientoValido(i, w).
 movimientoValido(i, s).
 movimientoValido(i, a).
 movimientoValido(i, d).
+/******************************************/
 
+/* posiciones consideradas como validas */
 posValida(i).
 posValida(f).
 posValida(ad).
@@ -20,41 +23,74 @@ posValida(at).
 posValida(ab).
 posValida(ar).
 posValida(inter).
+/******************************************/
 
 
+/*
+permiteMovimiento
+E: ficha-> ficha actual, direccion -> letra que representa la direccion del movimiento , siguiente -> ficha siguiente
+S: true si el movimiento se puede realizar
+R: ninguna
+O: Validar si un movimiento es posible
+*/
 permiteMovimiento(Ficha,Direccion,Siguiente):-
     movimientoValido(Ficha,Direccion),
     posValida(Siguiente).
 
+
+/*
+splitFile
+E: Archivo ->archivo a dividir
+S: X -> archivo dividido
+R: el archivo debe existir
+O: Crear una lista dividiento un archivo por cambios de linea y comas
+*/
 splitFile(Archivo,X) :-
     read_file_to_string(Archivo, Res,[]),%archivo a string
     split_string(Res,".\n", ".\n", X). %string splitter
-    
-    
 
-%getLaberinto(Archivo,X):-
-%    splitFile(Archivo,X).
+/*
+dividirFila
+E: X -> cadena de texto
+S: Y -> lista
+R: ninguna
+O: Dividir un string por comas y eliminar corchetes
+*/    
+dividirFila(X,Y):-
+    split_string(X, ",", "[]", Y).
 
 
+/*
+getLaberinto
+E: archivo -> ruta del archivo
+S: Matriz del laberinto
+R: el archivo debe existir
+O: Obtener un laberinto de un archivo de texto
+*/
+getLaberinto(Archivo,B):-
+    splitFile(Archivo,A),
+    maplist(dividirFila, A,B).
+
+/*
+printList
+E: una lista
+S: imprime la lista
+R: ninguna
+O: Imprimir una lista
+*/
 printList([]).
 printList([X|Y]):-
     write(X),nl,
     printList(Y).
 
-getLaberinto(Archivo,B):-
-    %getLaberinto(Archivo,A),
-    splitFile(Archivo,A),
-    maplist(dividirFila, A,B).
-    
-dividirFila(X,Y):-
-    split_string(X, ",", "[]", Y).
 
 
 
+ 
+/* intento fallido de autosolución
 ttt(LaberintoSol,X,Y,FichaAnterior,Res):-
     Lista = [],
     nb_setval(soluGlobal,Lista),
-    %b_setval(laberintoTest,LaberintoSol),
     test(LaberintoSol,X,Y,FichaAnterior,Res),
     nb_getval(soluGlobal,SoluFinal),
     nb_setval(continuar,0),
@@ -148,10 +184,11 @@ recorrerDireciones(M,N,X,PuntosMovimientos,LetrasMovimientos,LaberintoSol,Actual
     (I >= N), !,
     recorrerDireciones(M,I,X,PuntosMovimientos,LetrasMovimientos,LaberintoSol,Actual,PuntoFinal,FichaAnterior)).
 
-
 replace([_|T], 0, X, [X|T]).
 replace([H|T], I, X, [H|R]):- 
     I > -1, 
     NI is I-1, 
     replace(T, NI, X, R), !.
 replace(L, _, _, L).
+
+*/

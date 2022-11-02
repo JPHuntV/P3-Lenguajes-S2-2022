@@ -1,9 +1,11 @@
-#https://blog.teclado.com/tkinter-scrollable-frames/
-
 
 from tkinter import Frame, Canvas, Scrollbar
 import tkinter as tk
 
+
+#Permite crear un frame con capacidad de scroll
+#Este codigo fue extraido de https://blog.teclado.com/tkinter-scrollable-frames/
+# y se el realizaron ajustes segun las necesidades
 class ScrollableFrame(Frame):
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)

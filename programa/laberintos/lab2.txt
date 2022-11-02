@@ -1,0 +1,11 @@
+[x,x,i,x,x,x,x,x,x,x,x,x].
+[x,ar,inter,ad,ad,ad,ad,ad,ad,ad,inter,x].
+[x,x,ad,x,x,x,x,x,x,x,ab,x].
+[x,x,ad,x,x,x,x,x,ab,at,inter,x].
+[x,ad,inter,x,x,inter,ab,ab,inter,x,x,x].
+[x,ad,x,inter,ab,inter,x,x,inter,ad,inter,x].
+[x,ad,x,at,x,x,x,x,ab,x,ab,x].
+[x,inter,ab,inter,ab,ab,inter,x,ab,x,ad,x].
+[x,ad,x,x,x,x,inter,at,inter,ab,ab,x].
+[x,inter,ab,ab,x,inter,inter,x,at,ar,inter,x].
+[x,x,x,x,x,f,x,x,x,x,x,x].
